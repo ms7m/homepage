@@ -2,6 +2,7 @@ import { handleNowPlaying } from "./routes/now-playing";
 import { handleLastFm } from "./routes/lastfm";
 import { handleAbout } from "./routes/about";
 import { handleWebhook } from "./routes/webhook";
+import { handleAlbums } from "./routes/albums";
 
 export interface Env {
   ALBUMS: KVNamespace;
@@ -49,6 +50,8 @@ export default {
       response = await handleLastFm(request, env);
     } else if (path === "/about" && request.method === "GET") {
       response = await handleAbout();
+    } else if (path === "/albums" && request.method === "GET") {
+      response = await handleAlbums(request, env);
     } else if (path === "/webhook" && request.method === "POST") {
       response = await handleWebhook(request, env);
     } else {

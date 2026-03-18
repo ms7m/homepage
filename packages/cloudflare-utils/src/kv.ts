@@ -37,3 +37,20 @@ export async function getAllAlbums(
   const records = await Promise.all(index.map((id) => getAlbum(env, id)));
   return records.filter((r): r is AlbumRecord => r !== null);
 }
+
+export async function getAlbumsPage(
+  env: CratediggerEnv,
+  page: number,
+  limit: number
+): Promise<{ albums: AlbumRecord[]; total: number; hasMore: boolean }> {
+  const index = await getAlbumIndex(env);
+  const total = index.length;
+  const start = page * limit;
+  const slice = index.slice(start, start + limit);
+  const records = await Promise.all(slice.map((id) => getAlbum(env, id)));
+  return {
+    albums: records.filter((r): r is AlbumRecord => r !== null),
+    total,
+    hasMore: start + limit < total,
+  };
+}

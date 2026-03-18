@@ -11,6 +11,9 @@ id = "991e0d00dbd647e7a413414180e5ce5f"
 binding = "ALBUM_ART"
 bucket_name = "mikka-album-art"
 
+[vars]
+PUBLIC_API_URL = "https://api.mikka.link"
+
 # Secrets: set via `wrangler secret put`
 # WEBHOOK_SECRET
 # SPOTIFY_CLIENT_ID

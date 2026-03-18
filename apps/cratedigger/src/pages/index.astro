@@ -1,16 +1,19 @@
 ---
 import "../styles/global.css";
-import AlbumModal from "../components/AlbumModal.vue";
-import { getAllAlbums } from "@mikka/cloudflare-utils";
+import AlbumGrid from "../components/AlbumGrid.vue";
+import { getAlbumsPage } from "@mikka/cloudflare-utils";
 import type { CratediggerEnv } from "@mikka/cloudflare-utils";
 
-let albums: Awaited<ReturnType<typeof getAllAlbums>> = [];
+const PAGE_SIZE = 24;
+const API_URL = import.meta.env.PUBLIC_API_URL ?? "https://api.mikka.link";
+
+let initialAlbums: Awaited<ReturnType<typeof getAlbumsPage>> = { albums: [], total: 0, hasMore: false };
 
 try {
   const env = (Astro.locals as { runtime: { env: CratediggerEnv } }).runtime.env;
-  albums = await getAllAlbums(env);
+  initialAlbums = await getAlbumsPage(env, 0, PAGE_SIZE);
 } catch {
-  // dev mode without wrangler — show empty grid
+  // dev mode without wrangler
 }
 ---
 
@@ -28,7 +31,7 @@ try {
       <div class="header-inner">
         <div class="header-left">
           <h1 class="site-title">cratedigger</h1>
-          <span class="record-count">{albums.length} records</span>
+          <span class="record-count">{initialAlbums.total} records</span>
         </div>
         <a href="https://mikka.link" class="back-link">mikka.link ↗</a>
       </div>
@@ -36,38 +39,13 @@ try {
     </header>
 
     <main>
-      {albums.length === 0 ? (
-        <div class="empty">No records yet.</div>
-      ) : (
-        <div class="grid">
-          {albums.map((album) => (
-            <div
-              class="album"
-              data-album={JSON.stringify(album)}
-            >
-              <img
-                src={album.artUrl}
-                alt={`${album.title} by ${album.artist}`}
-                loading="lazy"
-              />
-              <p class="title">{album.title}</p>
-              <p class="artist">{album.artist}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      <AlbumGrid
+        client:only="vue"
+        initialAlbums={initialAlbums.albums}
+        total={initialAlbums.total}
+        apiUrl={API_URL}
+      />
     </main>
-
-    <AlbumModal client:only="vue" />
-
-    <script is:inline>
-      document.addEventListener("click", function (e) {
-        var cell = e.target.closest("[data-album]");
-        if (!cell) return;
-        var album = JSON.parse(cell.dataset.album);
-        window.dispatchEvent(new CustomEvent("album-click", { detail: album }));
-      });
-    </script>
   </body>
 </html>
 
@@ -123,67 +101,5 @@ try {
 
   .back-link:hover {
     color: hsl(var(--foreground));
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 32px;
-    padding: 32px;
-  }
-
-  @media (min-width: 480px) {
-    .grid { grid-template-columns: repeat(3, 1fr); }
-  }
-  @media (min-width: 768px) {
-    .grid { grid-template-columns: repeat(4, 1fr); }
-  }
-  @media (min-width: 1024px) {
-    .grid { grid-template-columns: repeat(5, 1fr); }
-  }
-  @media (min-width: 1400px) {
-    .grid { grid-template-columns: repeat(6, 1fr); }
-  }
-
-  .album {
-    cursor: pointer;
-  }
-
-  .album img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    display: block;
-    transition: opacity 0.15s;
-  }
-
-  .album:hover img {
-    opacity: 0.8;
-  }
-
-  .title {
-    margin-top: 8px;
-    font-size: 0.8rem;
-    color: hsl(var(--foreground));
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .artist {
-    font-size: 0.75rem;
-    color: hsl(var(--muted-foreground));
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .empty {
-    padding: 80px 0;
-    text-align: center;
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: hsl(var(--muted-foreground));
   }
 </style>

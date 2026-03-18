@@ -2,12 +2,34 @@
 import type { AlbumRecord } from "@mikka/cloudflare-utils";
 import { ref, onMounted, onUnmounted } from "vue";
 
-defineProps<{
-  albums: AlbumRecord[];
+const props = defineProps<{
+  initialAlbums: AlbumRecord[];
+  total: number;
+  apiUrl: string;
 }>();
 
+const PAGE_SIZE = 24;
+
+const albums = ref<AlbumRecord[]>(props.initialAlbums);
+const page = ref(1);
+const hasMore = ref(props.initialAlbums.length < props.total);
+const loading = ref(false);
+const sentinel = ref<HTMLDivElement | null>(null);
 const selected = ref<AlbumRecord | null>(null);
 const flipped = ref(false);
+
+async function loadMore() {
+  if (loading.value || !hasMore.value) return;
+  loading.value = true;
+  try {
+    const res = await fetch(`${props.apiUrl}/albums?page=${page.value}&limit=${PAGE_SIZE}`);
+    const data = await res.json() as { albums: AlbumRecord[]; total: number; hasMore: boolean };
+    albums.value.push(...data.albums);
+    hasMore.value = data.hasMore;
+    page.value++;
+  } catch {}
+  loading.value = false;
+}
 
 function open(album: AlbumRecord) {
   selected.value = album;
@@ -26,12 +48,23 @@ function onKey(e: KeyboardEvent) {
   if (e.key === "Escape") close();
 }
 
-onMounted(() => window.addEventListener("keydown", onKey));
-onUnmounted(() => window.removeEventListener("keydown", onKey));
+let observer: IntersectionObserver | null = null;
+
+onMounted(() => {
+  window.addEventListener("keydown", onKey);
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting) loadMore();
+  }, { rootMargin: "200px" });
+  if (sentinel.value) observer.observe(sentinel.value);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", onKey);
+  observer?.disconnect();
+});
 </script>
 
 <template>
-  <!-- Grid -->
   <div class="grid">
     <div
       v-for="album in albums"
@@ -48,9 +81,14 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
       <p class="artist">{{ album.artist }}</p>
     </div>
 
-    <div v-if="albums.length === 0" class="empty">
+    <div v-if="albums.length === 0 && !loading" class="empty">
       No records yet.
     </div>
+  </div>
+
+  <!-- Infinite scroll sentinel -->
+  <div ref="sentinel" class="sentinel">
+    <span v-if="loading" class="loading">loading</span>
   </div>
 
   <!-- Flip modal -->
@@ -59,11 +97,9 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
       <div v-if="selected" class="modal-overlay" @click.self="close">
         <div class="modal-scene">
           <div class="modal-flipper" :class="{ flipped }">
-            <!-- Front: art only -->
             <div class="modal-face modal-front">
               <img :src="selected.artUrl" :alt="selected.title" />
             </div>
-            <!-- Back: info -->
             <div class="modal-face modal-back">
               <button class="modal-close" @click="close" aria-label="Close">✕</button>
               <img :src="selected.artUrl" :alt="selected.title" class="back-art" />
@@ -90,7 +126,6 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 </template>
 
 <style scoped>
-/* ── Grid ── */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -98,22 +133,12 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
   padding: 32px;
 }
 
-@media (min-width: 480px) {
-  .grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (min-width: 768px) {
-  .grid { grid-template-columns: repeat(4, 1fr); }
-}
-@media (min-width: 1024px) {
-  .grid { grid-template-columns: repeat(5, 1fr); }
-}
-@media (min-width: 1400px) {
-  .grid { grid-template-columns: repeat(6, 1fr); }
-}
+@media (min-width: 480px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+@media (min-width: 1400px) { .grid { grid-template-columns: repeat(6, 1fr); } }
 
-.album {
-  cursor: pointer;
-}
+.album { cursor: pointer; }
 
 .album img {
   width: 100%;
@@ -123,25 +148,19 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
   transition: opacity 0.15s;
 }
 
-.album:hover img {
-  opacity: 0.8;
-}
+.album:hover img { opacity: 0.8; }
 
 .title {
   margin-top: 8px;
   font-size: 0.8rem;
   color: hsl(var(--foreground));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
 }
 
 .artist {
   font-size: 0.75rem;
   color: hsl(var(--muted-foreground));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
 }
 
 .empty {
@@ -154,7 +173,21 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
   color: hsl(var(--muted-foreground));
 }
 
-/* ── Modal ── */
+.sentinel {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -179,9 +212,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-flipper.flipped {
-  transform: rotateY(180deg);
-}
+.modal-flipper.flipped { transform: rotateY(180deg); }
 
 .modal-face {
   backface-visibility: hidden;
@@ -201,9 +232,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 
 .modal-back {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
@@ -219,8 +248,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 
 .modal-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 12px; right: 12px;
   background: none;
   border: none;
   color: hsl(var(--foreground) / 0.6);
@@ -232,9 +260,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
   transition: color 0.15s;
 }
 
-.modal-close:hover {
-  color: hsl(var(--foreground));
-}
+.modal-close:hover { color: hsl(var(--foreground)); }
 
 .modal-info {
   padding: 20px 24px 24px;
@@ -289,9 +315,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
   border-color: hsl(var(--foreground));
 }
 
-/* ── Transitions ── */
 .overlay-enter-active { transition: opacity 0.2s ease; }
 .overlay-leave-active { transition: opacity 0.25s ease; }
-.overlay-enter-from,
-.overlay-leave-to { opacity: 0; }
+.overlay-enter-from, .overlay-leave-to { opacity: 0; }
 </style>
