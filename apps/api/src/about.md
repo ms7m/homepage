@@ -7,4 +7,4 @@ If you're looking to contact me about DCMA please contact me via [here](mailto:d
 
 ---
 
-hi@mikka.link
+hi [at] mikka.link

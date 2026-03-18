@@ -7,7 +7,7 @@ const emit = defineEmits<{ click: [] }>();
     <div class="card-index">00</div>
     <div class="card-body">
       <p class="card-title">About</p>
-      <p class="card-sub">who is this guy</p>
+      <p class="card-sub">hi hi</p>
     </div>
     <div class="card-arrow">↗</div>
   </button>
