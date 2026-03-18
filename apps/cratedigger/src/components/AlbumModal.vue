@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AlbumRecord } from "@mikka/cloudflare-utils";
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
 const selected = ref<AlbumRecord | null>(null);
 const flipped = ref(false);
@@ -17,6 +17,13 @@ function close() {
   flipped.value = false;
   setTimeout(() => { selected.value = null; }, 320);
 }
+
+const spotifyEmbedUrl = computed(() => {
+  if (!selected.value || selected.value.source !== "spotify") return null;
+  const match = selected.value.url.match(/track\/([a-zA-Z0-9]+)/);
+  if (!match) return null;
+  return `https://open.spotify.com/embed/track/${match[1]}?utm_source=generator`;
+});
 
 function onKey(e: KeyboardEvent) {
   if (e.key === "Escape") close();
@@ -52,6 +59,14 @@ onUnmounted(() => {
                 <h2 class="info-title">{{ selected.title }}</h2>
                 <p class="info-artist">{{ selected.artist }}</p>
                 <p v-if="selected.album" class="info-album">{{ selected.album }}</p>
+                <iframe
+                  v-if="spotifyEmbedUrl"
+                  :src="spotifyEmbedUrl"
+                  class="spotify-embed"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  frameborder="0"
+                />
                 <a :href="selected.url" target="_blank" rel="noopener noreferrer" class="info-link">
                   Open in {{ selected.source === "spotify" ? "Spotify" : "SoundCloud" }} ↗
                 </a>
@@ -179,6 +194,13 @@ onUnmounted(() => {
 .info-album {
   font-size: 0.75rem;
   color: hsl(var(--muted-foreground));
+}
+
+.spotify-embed {
+  width: 100%;
+  height: 80px;
+  border-radius: 8px;
+  margin-top: 8px;
 }
 
 .info-link {
