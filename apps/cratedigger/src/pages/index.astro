@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import AlbumGrid from "../components/AlbumGrid.vue";
+import NowPlaying from "../components/NowPlaying.vue";
 import { getAlbumsPage } from "@mikka/cloudflare-utils";
 import type { CratediggerEnv } from "@mikka/cloudflare-utils";
 
@@ -31,7 +32,7 @@ try {
     <meta property="og:title" content="cratedigger" />
     <meta property="og:description" content="A crate of music I love." />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:creator" content="@ms7m" />
+    <meta name="twitter:creator" content="mikka" />
     <meta name="twitter:title" content="cratedigger" />
     <meta name="twitter:description" content="A crate of music I love." />
   </head>
@@ -42,9 +43,9 @@ try {
           <h1 class="site-title">cratedigger</h1>
           <span class="record-count">{initialAlbums.total} records</span>
         </div>
-        <a href="https://mikka.link" class="back-link">mikka.link ↗</a>
+        <NowPlaying client:only="vue" />
       </div>
-      <p class="subtitle">some music i think you should listen to</p>
+      <p class="subtitle">some music i think you should listen to — <a href="https://mikka.link" class="subtitle-link">check out my website</a></p>
     </header>
 
     <main>
@@ -99,16 +100,15 @@ try {
     color: hsl(var(--muted-foreground));
   }
 
-  .back-link {
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .subtitle-link {
     color: hsl(var(--muted-foreground));
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 2px;
     transition: color 0.15s;
   }
 
-  .back-link:hover {
+  .subtitle-link:hover {
     color: hsl(var(--foreground));
   }
+
 </style>
