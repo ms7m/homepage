@@ -43,7 +43,6 @@ interface ForceNode extends SimulationNodeDatum {
 
 const props = defineProps<{ cards: Card[] }>();
 
-const LIMIT = 600;
 const CARD_W = 200;
 const CARD_H = 300;
 const SMALL_W = 160;
@@ -208,10 +207,6 @@ function pos(id: string) {
 }
 
 // Drag
-function clamp(val: number, min: number, max: number) {
-  return Math.min(Math.max(val, min), max);
-}
-
 const isDragging = ref(false);
 let startX = 0;
 let startY = 0;
@@ -230,8 +225,8 @@ function onMouseDown(e: MouseEvent) {
 
 function onMouseMove(e: MouseEvent) {
   if (!isDragging.value) return;
-  offsetX.value = clamp(lastOffsetX + (e.clientX - startX), -LIMIT, LIMIT);
-  offsetY.value = clamp(lastOffsetY + (e.clientY - startY), -LIMIT, LIMIT);
+  offsetX.value = lastOffsetX + (e.clientX - startX);
+  offsetY.value = lastOffsetY + (e.clientY - startY);
 }
 
 function onMouseUp() {
@@ -252,8 +247,8 @@ function onTouchStart(e: TouchEvent) {
 function onTouchMove(e: TouchEvent) {
   if (!isDragging.value) return;
   const t = e.touches[0];
-  offsetX.value = clamp(lastOffsetX + (t.clientX - startX), -LIMIT, LIMIT);
-  offsetY.value = clamp(lastOffsetY + (t.clientY - startY), -LIMIT, LIMIT);
+  offsetX.value = lastOffsetX + (t.clientX - startX);
+  offsetY.value = lastOffsetY + (t.clientY - startY);
 }
 
 function onTouchEnd() { isDragging.value = false; }
@@ -277,8 +272,8 @@ function dpadLoop() {
   velY *= FRICTION;
 
   if (Math.abs(velX) > 0.1 || Math.abs(velY) > 0.1) {
-    offsetX.value = clamp(offsetX.value + velX, -LIMIT, LIMIT);
-    offsetY.value = clamp(offsetY.value + velY, -LIMIT, LIMIT);
+    offsetX.value = offsetX.value + velX;
+    offsetY.value = offsetY.value + velY;
     rafId = requestAnimationFrame(dpadLoop);
   } else {
     velX = 0;
