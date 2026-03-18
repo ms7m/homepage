@@ -300,16 +300,24 @@ function onDPadStop() {
 }
 
 let resizeTimer: ReturnType<typeof setTimeout>;
+let lastLayoutWidth = 0;
 function onResize() {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    isMobile.value = window.innerWidth < 640;
-    runLayout(window.innerWidth, window.innerHeight, false);
+    const vw = window.innerWidth;
+    isMobile.value = vw < 640;
+    // Only re-run layout when width changes — height-only changes are the
+    // mobile address bar showing/hiding and shouldn't affect card positions.
+    if (vw !== lastLayoutWidth) {
+      lastLayoutWidth = vw;
+      runLayout(vw, window.innerHeight, false);
+    }
   }, 100);
 }
 
 onMounted(() => {
   isMobile.value = window.innerWidth < 640;
+  lastLayoutWidth = window.innerWidth;
   updateTime();
   clockInterval = setInterval(updateTime, 60000);
   runLayout(window.innerWidth, window.innerHeight);
@@ -399,6 +407,8 @@ onUnmounted(() => {
   inset: 0;
   overflow: hidden;
   cursor: url("/cursors/Normal Select.cur"), grab;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 .canvas.is-dragging {
