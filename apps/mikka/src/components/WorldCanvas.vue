@@ -21,6 +21,7 @@ import SocialCard from "./SocialCard.vue";
 import MetroCard from "./MetroCard.vue";
 import PassportCard from "./PassportCard.vue";
 import PassportSheet from "./PassportSheet.vue";
+import SnoopySticker from "./SnoopySticker.vue";
 
 interface Card {
   href: string;
@@ -107,6 +108,7 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
       { id: "github",        w: smallW, h: smallH, x: -sx * 0.2,  y: -sy * 0.7  },
       { id: "linkedin",      w: smallW, h: smallH, x:  sx * 0.4,  y: -sy * 0.6  },
       { id: "passport",      w: 180,    h: 255,    x: -sx * 0.5,  y:  sy * 1.0  },
+      { id: "snoopy",        w: 100,    h: 100,    x:  sx * 0.6,  y: -sy * 0.8  },
     ];
   }
 
@@ -130,6 +132,7 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
     { id: "github",        w: cardW,  h: smallH, x: -sx * 0.8, y:  0        },
     { id: "metrocard",     w: 340,    h: 215,    x:  sx * 2.2, y: -sy * 1.8 },
     { id: "passport",      w: 260,    h: 370,    x: -sx * 1.5, y:  sy * 1.2 },
+    { id: "snoopy",        w: 130,    h: 130,    x:  sx * 1.3, y:  sy * 0.6 },
   ];
 }
 
@@ -381,6 +384,7 @@ onUnmounted(() => {
       />
       <MetroCard v-if="!isMobile" :style="pos('metrocard')" />
       <PassportCard :style="pos('passport')" @click="passportOpen = true" />
+      <SnoopySticker :style="pos('snoopy')" />
       <SocialCard
         :style="pos('github')"
         href="https://github.com/ms7m"
