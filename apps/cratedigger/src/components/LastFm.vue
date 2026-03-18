@@ -1,19 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-
-const totalScrobbles = ref<string | null>(null);
-let interval: ReturnType<typeof setInterval>;
-
-async function fetchData() {
-  try {
-    const res = await fetch(`${import.meta.env.PUBLIC_API_URL}/lastfm`);
-    const data = await res.json();
-    if (data.user) totalScrobbles.value = Number(data.user.totalScrobbles).toLocaleString();
-  } catch {}
-}
-
-onMounted(() => { fetchData(); interval = setInterval(fetchData, 60000); });
-onUnmounted(() => clearInterval(interval));
+defineProps<{ scrobbles: string | null }>();
 </script>
 
 <template>
@@ -25,8 +11,7 @@ onUnmounted(() => clearInterval(interval));
   >
     <img src="/lastfm.svg" alt="last.fm" class="lfm-icon" />
     <div class="lfm-body">
-      <span class="lfm-count" v-if="totalScrobbles">{{ totalScrobbles }}</span>
-      <span class="lfm-count" v-else>—</span>
+      <span class="lfm-count">{{ scrobbles ?? "—" }}</span>
       <span class="lfm-label">scrobbles</span>
     </div>
   </a>
