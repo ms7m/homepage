@@ -10,9 +10,20 @@
 # @raycast.packageName CrateDigger
 
 WEBHOOK_URL="https://api.mikka.link/webhook"
-WEBHOOK_SECRET="21b1a475e9c0d33f704dda9b023d916e9bb2f094e4d7e938ff8c2278640e7b7e"
+CONFIG_FILE="$HOME/.config/cratedigger/config"
 
-# Get currently playing track from Spotify via AppleScript
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "Missing config at ~/.config/cratedigger/config"
+  exit 1
+fi
+
+source "$CONFIG_FILE"
+
+if [ -z "$WEBHOOK_SECRET" ]; then
+  echo "WEBHOOK_SECRET not set in config"
+  exit 1
+fi
+
 SPOTIFY_URL=$(osascript <<'EOF'
 tell application "Spotify"
   if player state is playing then
@@ -29,7 +40,6 @@ if [ -z "$SPOTIFY_URL" ]; then
   exit 1
 fi
 
-# Convert spotify:track:ID URI to https URL if needed
 if [[ "$SPOTIFY_URL" == spotify:track:* ]]; then
   TRACK_ID="${SPOTIFY_URL##spotify:track:}"
   SPOTIFY_URL="https://open.spotify.com/track/${TRACK_ID}"

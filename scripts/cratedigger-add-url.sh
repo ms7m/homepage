@@ -11,11 +11,22 @@
 # @raycast.packageName CrateDigger
 
 WEBHOOK_URL="https://api.mikka.link/webhook"
-WEBHOOK_SECRET="21b1a475e9c0d33f704dda9b023d916e9bb2f094e4d7e938ff8c2278640e7b7e"
+CONFIG_FILE="$HOME/.config/cratedigger/config"
+
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "Missing config at ~/.config/cratedigger/config"
+  exit 1
+fi
+
+source "$CONFIG_FILE"
+
+if [ -z "$WEBHOOK_SECRET" ]; then
+  echo "WEBHOOK_SECRET not set in config"
+  exit 1
+fi
 
 URL="$1"
 
-# Fall back to clipboard if no argument provided
 if [ -z "$URL" ]; then
   URL=$(pbpaste)
 fi
