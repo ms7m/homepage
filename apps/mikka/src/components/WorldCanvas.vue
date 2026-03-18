@@ -19,6 +19,8 @@ import LastFmTopArtist from "./LastFmTopArtist.vue";
 import AceCard from "./AceCard.vue";
 import SocialCard from "./SocialCard.vue";
 import MetroCard from "./MetroCard.vue";
+import PassportCard from "./PassportCard.vue";
+import PassportSheet from "./PassportSheet.vue";
 
 interface Card {
   href: string;
@@ -55,6 +57,7 @@ const offsetY = ref(0);
 const worldOriginX = ref(0);
 const worldOriginY = ref(0);
 const aboutOpen = ref(false);
+const passportOpen = ref(false);
 const isMobile = ref(false);
 
 const time = ref("");
@@ -103,6 +106,7 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
       { id: "twitter",       w: smallW, h: smallH, x:  sx * 0.2,  y:  sy * 0.7  },
       { id: "github",        w: smallW, h: smallH, x: -sx * 0.2,  y: -sy * 0.7  },
       { id: "linkedin",      w: smallW, h: smallH, x:  sx * 0.4,  y: -sy * 0.6  },
+      { id: "passport",      w: 180,    h: 255,    x: -sx * 0.5,  y:  sy * 1.0  },
     ];
   }
 
@@ -125,6 +129,7 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
     { id: "linkedin",      w: smallW, h: smallH, x:  sx * 1.1, y:  sy * 0.3 },
     { id: "github",        w: cardW,  h: smallH, x: -sx * 0.8, y:  0        },
     { id: "metrocard",     w: 340,    h: 215,    x:  sx * 2.2, y: -sy * 1.8 },
+    { id: "passport",      w: 260,    h: 370,    x: -sx * 1.5, y:  sy * 1.2 },
   ];
 }
 
@@ -138,16 +143,18 @@ function runLayout(vw: number, vh: number, resetOffset = true) {
     .force("x", forceX<ForceNode>((d) => {
       if (isMobile) return 0;
       if (d.id === "metrocard") return sx * 2.2;
+      if (d.id === "passport") return -sx * 1.5;
       if (d.id === "about") return vw * 0.25;
       if (d.id === "github") return -vw * 0.18;
       return 0;
-    }).strength((d) => d.id === "metrocard" ? 1 : 0.12))
+    }).strength((d) => (d.id === "metrocard" || d.id === "passport") ? 1 : 0.12))
     .force("y", forceY<ForceNode>((d) => {
       if (isMobile) return 0;
       if (d.id === "metrocard") return -sy * 1.8;
+      if (d.id === "passport") return sy * 1.6;
       if (d.id === "about" || d.id === "now-playing") return sy * 0.9;
       return 0;
-    }).strength((d) => d.id === "metrocard" ? 1 : 0.12))
+    }).strength((d) => (d.id === "metrocard" || d.id === "passport") ? 1 : 0.12))
     .force(
       "collide",
       forceCollide<ForceNode>((d) =>
@@ -170,7 +177,7 @@ function runLayout(vw: number, vh: number, resetOffset = true) {
   nodeSizes.value = sizes;
 
   // Center the group in the viewport — exclude outlier cards like metrocard
-  const centerNodes = nodes.filter((n) => n.id !== "metrocard");
+  const centerNodes = nodes.filter((n) => n.id !== "metrocard" && n.id !== "passport");
   const xs = centerNodes.map((n) => (n.x ?? 0) - n.w / 2);
   const xe = centerNodes.map((n) => (n.x ?? 0) + n.w / 2);
   const ys = centerNodes.map((n) => (n.y ?? 0) - n.h / 2);
@@ -373,6 +380,7 @@ onUnmounted(() => {
         accentColor="#1d9bf0"
       />
       <MetroCard v-if="!isMobile" :style="pos('metrocard')" />
+      <PassportCard :style="pos('passport')" @click="passportOpen = true" />
       <SocialCard
         :style="pos('github')"
         href="https://github.com/ms7m"
@@ -394,6 +402,7 @@ onUnmounted(() => {
   </div>
 
   <AboutModal v-model:open="aboutOpen" />
+  <PassportSheet v-model:open="passportOpen" />
 </template>
 
 <style scoped>
