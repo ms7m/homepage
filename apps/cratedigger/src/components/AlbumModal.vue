@@ -59,14 +59,6 @@ onUnmounted(() => {
                 <h2 class="info-title">{{ selected.title }}</h2>
                 <p class="info-artist">{{ selected.artist }}</p>
                 <p v-if="selected.album" class="info-album">{{ selected.album }}</p>
-                <iframe
-                  v-if="spotifyEmbedUrl"
-                  :src="spotifyEmbedUrl"
-                  class="spotify-embed"
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                  frameborder="0"
-                />
                 <a :href="selected.url" target="_blank" rel="noopener noreferrer" class="info-link">
                   Open in {{ selected.source === "spotify" ? "Spotify" : "SoundCloud" }} ↗
                 </a>
@@ -74,6 +66,17 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
+        <!-- iframe lives outside preserve-3d so it renders correctly -->
+        <Transition name="embed">
+          <iframe
+            v-if="spotifyEmbedUrl && flipped"
+            :src="spotifyEmbedUrl"
+            class="spotify-embed"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            frameborder="0"
+          />
+        </Transition>
       </div>
     </Transition>
   </Teleport>
@@ -88,8 +91,10 @@ onUnmounted(() => {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
 }
 
 .modal-scene {
@@ -197,10 +202,25 @@ onUnmounted(() => {
 }
 
 .spotify-embed {
-  width: 100%;
+  width: min(400px, 90vw);
   height: 80px;
   border-radius: 8px;
-  margin-top: 8px;
+  border: none;
+  flex-shrink: 0;
+}
+
+.embed-enter-active {
+  transition: opacity 0.3s ease 0.2s, transform 0.3s ease 0.2s;
+}
+.embed-leave-active {
+  transition: opacity 0.15s ease;
+}
+.embed-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.embed-leave-to {
+  opacity: 0;
 }
 
 .info-link {
