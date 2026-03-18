@@ -41,4 +41,4 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
-scripts/
+scripts/spotify-auth.mjs
