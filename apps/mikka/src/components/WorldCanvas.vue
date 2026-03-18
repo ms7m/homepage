@@ -367,7 +367,7 @@ onUnmounted(() => {
         :rotate="-1.5"
         accentColor="#1d9bf0"
       />
-      <MetroCard :style="pos('metrocard')" />
+      <MetroCard v-if="!isMobile" :style="pos('metrocard')" />
       <SocialCard
         :style="pos('github')"
         href="https://github.com/ms7m"
