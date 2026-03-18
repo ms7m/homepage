@@ -1,0 +1,20 @@
+{
+  "name": "mikka-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev:mikka": "pnpm --filter @mikka/site dev",
+    "dev:blog": "pnpm --filter @mikka/blog dev",
+    "dev:cratedigger": "pnpm --filter @mikka/cratedigger dev",
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "type-check": "turbo type-check",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.3",
+    "prettier": "^3.4.2",
+    "@types/node": "^22.10.7"
+  }
+}

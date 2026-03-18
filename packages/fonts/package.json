@@ -1,0 +1,9 @@
+{
+  "name": "@mikka/fonts",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    "./index.css": "./index.css"
+  },
+  "files": ["index.css", "files/"]
+}

@@ -1,0 +1,9 @@
+name = "mikka-site"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
+
+# Secrets: set via `wrangler secret put`
+# SPOTIFY_CLIENT_ID
+# SPOTIFY_CLIENT_SECRET
+# SPOTIFY_REFRESH_TOKEN

@@ -1,0 +1,49 @@
+---
+import Base from "../layouts/Base.astro";
+import WorldCanvas from "../components/WorldCanvas.vue";
+
+const cards = [
+  {
+    href: "https://blog.mikka.link",
+    index: "01",
+    title: "Blog",
+    description: "writing & thoughts",
+    image: "/images/blog.jpg",
+    credit: "Jacob Lawrence. One of the largest race riots occurred in East St. Louis. 1940–41",
+    cx: 350,
+    cy: -350,
+    rotate: -4,
+  },
+  {
+    href: "https://cratedigger.mikka.link",
+    index: "02",
+    title: "Crate Digger",
+    description: "music i love",
+    image: "/images/cratedigging.jpg",
+    cx: 180,
+    cy: 40,
+    rotate: 2.5,
+  },
+  {
+    href: "https://120bpm.nyc",
+    index: "03",
+    title: "120bpm.nyc",
+    description: "a project",
+    image: "/images/120bpm.jpg",
+    cx: -100,
+    cy: 220,
+    rotate: 1.5,
+  },
+];
+---
+
+<Base title="mikka.link">
+  <WorldCanvas cards={cards} client:only="vue" />
+</Base>
+
+<style>
+  body {
+    background-image: none !important;
+    cursor: url("/cursors/Normal Select.cur"), auto;
+  }
+</style>

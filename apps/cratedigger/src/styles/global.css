@@ -1,0 +1,29 @@
+@import "@mikka/fonts/index.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --muted-foreground: 0 0% 55%;
+    --border: 0 0% 14.9%;
+    --grid-size: 96px;
+    --grid-opacity: 0.3;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image:
+      linear-gradient(hsl(var(--border) / var(--grid-opacity)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / var(--grid-opacity)) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    min-height: 100vh;
+  }
+}

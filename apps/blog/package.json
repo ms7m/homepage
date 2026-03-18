@@ -1,0 +1,30 @@
+{
+  "name": "@mikka/blog",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "type-check": "astro check && tsc --noEmit"
+  },
+  "dependencies": {
+    "@mikka/ui": "workspace:*",
+    "@mikka/fonts": "workspace:*",
+    "@mikka/tailwind-config": "workspace:*"
+  },
+  "devDependencies": {
+    "@mikka/typescript-config": "workspace:*",
+    "astro": "^5.2.5",
+    "@astrojs/vue": "^4.5.0",
+    "@astrojs/tailwind": "^5.1.4",
+    "@astrojs/cloudflare": "^12.2.1",
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/mdx": "^4.0.5",
+    "vue": "^3.5.13",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "unist-util-visit": "^5.0.0"
+  }
+}

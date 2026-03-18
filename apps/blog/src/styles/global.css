@@ -1,0 +1,118 @@
+@import "@mikka/fonts/index.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --muted-foreground: 0 0% 45.1%;
+    --border: 0 0% 89.8%;
+    --grid-size: 96px;
+    --grid-opacity: 0.4;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --muted-foreground: 0 0% 55%;
+    --border: 0 0% 14.9%;
+    --grid-opacity: 0.3;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image:
+      linear-gradient(hsl(var(--border) / var(--grid-opacity)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / var(--grid-opacity)) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    min-height: 100vh;
+  }
+}
+
+/* AI Diff styles */
+.ai-diff {
+  @apply underline decoration-dotted decoration-amber-500 cursor-help;
+}
+
+/* Context tooltip styles */
+.ctx-tooltip {
+  @apply underline decoration-dotted decoration-blue-500 cursor-help;
+}
+
+/* Prose */
+.prose {
+  max-width: none;
+  color: hsl(var(--foreground) / 0.85);
+  line-height: 1.8;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  font-family: "EditorialNew", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  color: hsl(var(--foreground));
+}
+
+.prose h1 { font-size: 2.2rem; margin-bottom: 1rem; line-height: 1.1; }
+.prose h2 { font-size: 1.4rem; margin: 2rem 0 0.75rem; }
+.prose h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+
+.prose p { margin-bottom: 1.25rem; font-size: 0.95rem; }
+
+.prose a {
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 1px;
+  transition: border-color 0.15s;
+}
+.prose a:hover { border-color: hsl(var(--foreground)); }
+
+.prose code {
+  font-size: 0.85em;
+  background: hsl(var(--border) / 0.5);
+  padding: 0.15em 0.35em;
+}
+
+.prose pre {
+  background: hsl(var(--border) / 0.3);
+  border: 1px solid hsl(var(--border));
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.prose blockquote {
+  border-left: 2px solid hsl(var(--border));
+  padding-left: 1.25rem;
+  color: hsl(var(--muted-foreground));
+  margin: 1.5rem 0;
+}
+
+.prose hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2rem 0;
+}
+
+.prose ul, .prose ol {
+  padding-left: 1.4em;
+  margin-bottom: 1.25rem;
+}
+
+.prose li { font-size: 0.95rem; margin-bottom: 0.25rem; }

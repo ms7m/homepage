@@ -1,0 +1,5 @@
+{
+  "extends": "@mikka/typescript-config/astro.json",
+  "include": ["src/**/*", ".astro/**/*"],
+  "exclude": ["dist"]
+}

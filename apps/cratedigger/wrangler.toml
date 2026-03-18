@@ -1,0 +1,19 @@
+name = "cratedigger"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
+
+[[kv_namespaces]]
+binding = "ALBUMS"
+id = "3a56142a785249c29739495625c45126"
+preview_id = "6a7d2cf90b904bb4b1ee1ea733f6a720"
+
+[[r2_buckets]]
+binding = "ALBUM_ART"
+bucket_name = "mikka-album-art"
+
+# Secrets: set via `wrangler secret put`
+# WEBHOOK_SECRET
+# SPOTIFY_CLIENT_ID
+# SPOTIFY_CLIENT_SECRET
+# R2_PUBLIC_URL  (e.g. https://art.mikka.link)

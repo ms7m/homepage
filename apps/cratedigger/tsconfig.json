@@ -1,0 +1,8 @@
+{
+  "extends": "@mikka/typescript-config/astro.json",
+  "compilerOptions": {
+    "types": ["astro/client", "@cloudflare/workers-types"]
+  },
+  "include": ["src/**/*", ".astro/**/*"],
+  "exclude": ["dist"]
+}

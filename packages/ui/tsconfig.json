@@ -1,0 +1,4 @@
+{
+  "extends": "@mikka/typescript-config/vue.json",
+  "include": ["src/**/*"]
+}

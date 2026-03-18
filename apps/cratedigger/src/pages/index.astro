@@ -1,0 +1,189 @@
+---
+import "../styles/global.css";
+import AlbumModal from "../components/AlbumModal.vue";
+import { getAllAlbums } from "@mikka/cloudflare-utils";
+import type { CratediggerEnv } from "@mikka/cloudflare-utils";
+
+let albums: Awaited<ReturnType<typeof getAllAlbums>> = [];
+
+try {
+  const env = (Astro.locals as { runtime: { env: CratediggerEnv } }).runtime.env;
+  albums = await getAllAlbums(env);
+} catch {
+  // dev mode without wrangler — show empty grid
+}
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A crate of music I love." />
+    <title>cratedigger</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <div class="header-left">
+          <h1 class="site-title">cratedigger</h1>
+          <span class="record-count">{albums.length} records</span>
+        </div>
+        <a href="https://mikka.link" class="back-link">mikka.link ↗</a>
+      </div>
+      <p class="subtitle">some music i think you should listen to</p>
+    </header>
+
+    <main>
+      {albums.length === 0 ? (
+        <div class="empty">No records yet.</div>
+      ) : (
+        <div class="grid">
+          {albums.map((album) => (
+            <div
+              class="album"
+              data-album={JSON.stringify(album)}
+            >
+              <img
+                src={album.artUrl}
+                alt={`${album.title} by ${album.artist}`}
+                loading="lazy"
+              />
+              <p class="title">{album.title}</p>
+              <p class="artist">{album.artist}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </main>
+
+    <AlbumModal client:only="vue" />
+
+    <script is:inline>
+      document.addEventListener("click", function (e) {
+        var cell = e.target.closest("[data-album]");
+        if (!cell) return;
+        var album = JSON.parse(cell.dataset.album);
+        window.dispatchEvent(new CustomEvent("album-click", { detail: album }));
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  header {
+    padding: 32px 32px 24px;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .site-title {
+    font-family: "EditorialNew", Georgia, serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: hsl(var(--foreground));
+  }
+
+  .record-count {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .back-link {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .back-link:hover {
+    color: hsl(var(--foreground));
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    padding: 32px;
+  }
+
+  @media (min-width: 480px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 768px) {
+    .grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .grid { grid-template-columns: repeat(5, 1fr); }
+  }
+  @media (min-width: 1400px) {
+    .grid { grid-template-columns: repeat(6, 1fr); }
+  }
+
+  .album {
+    cursor: pointer;
+  }
+
+  .album img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.15s;
+  }
+
+  .album:hover img {
+    opacity: 0.8;
+  }
+
+  .title {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: hsl(var(--foreground));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .artist {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .empty {
+    padding: 80px 0;
+    text-align: center;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+</style>

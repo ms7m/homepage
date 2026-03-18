@@ -1,0 +1,111 @@
+@font-face {
+  font-family: "EditorialNew";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./files/PPEditorialNew-Regular.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EditorialNew";
+  font-weight: 400;
+  font-style: italic;
+  src: url("./files/PPEditorialNew-Italic.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EditorialNew";
+  font-weight: 800;
+  font-style: normal;
+  src: url("./files/PPEditorialNew-Ultrabold.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EditorialNew";
+  font-weight: 800;
+  font-style: italic;
+  src: url("./files/PPEditorialNew-UltraboldItalic.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EditorialNew";
+  font-weight: 200;
+  font-style: normal;
+  src: url("./files/PPEditorialNew-Ultralight.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EditorialNew";
+  font-weight: 200;
+  font-style: italic;
+  src: url("./files/PPEditorialNew-UltralightItalic.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NimbusSanL";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./files/NimbusSanL-Regu.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NimbusSanL";
+  font-weight: 700;
+  font-style: normal;
+  src: url("./files/NimbusSanL-Bold.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NimbusSanL";
+  font-weight: 400;
+  font-style: italic;
+  src: url("./files/NimbusSanL-ReguItal.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NimbusSanL";
+  font-weight: 700;
+  font-style: italic;
+  src: url("./files/NimbusSanL-BoldItal.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NimbusSanLCondensed";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./files/NimbusSanL-ReguCond.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NimbusSanLCondensed";
+  font-weight: 700;
+  font-style: normal;
+  src: url("./files/NimbusSanL-BoldCond.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NimbusSanLCondensed";
+  font-weight: 400;
+  font-style: italic;
+  src: url("./files/NimbusSanL-ReguCondItal.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NimbusSanLCondensed";
+  font-weight: 700;
+  font-style: italic;
+  src: url("./files/NimbusSanL-BoldCondItal.ttf") format("truetype");
+  font-display: swap;
+}

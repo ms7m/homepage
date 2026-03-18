@@ -1,0 +1,21 @@
+export interface CratediggerEnv {
+  ALBUMS: KVNamespace;
+  ALBUM_ART: R2Bucket;
+  WEBHOOK_SECRET: string;
+  SPOTIFY_CLIENT_ID: string;
+  SPOTIFY_CLIENT_SECRET: string;
+}
+
+export interface AlbumRecord {
+  id: string;
+  url: string;
+  source: "spotify" | "soundcloud";
+  title: string;
+  artist: string;
+  album: string;
+  artKey: string;
+  artUrl: string;
+  addedAt: string;
+}
+
+export type AlbumIndex = string[];

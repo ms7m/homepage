@@ -1,0 +1,142 @@
+---
+import "../styles/global.css";
+import BlogTooltips from "../components/BlogTooltips.vue";
+
+interface Props {
+  title: string;
+  description?: string;
+  pubDate: Date;
+  tags?: string[];
+}
+
+const { title, description, pubDate, tags = [] } = Astro.props;
+const formattedDate = pubDate.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {description && <meta name="description" content={description} />}
+    <title>{title} — mikka</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <a href="/" class="back-link">← blog</a>
+        <a href="https://mikka.link" class="home-link">mikka.link ↗</a>
+      </div>
+    </header>
+
+    <main>
+      <article>
+        <div class="post-header">
+          {tags.length > 0 && (
+            <div class="tags">
+              {tags.map((tag) => <span class="tag">{tag}</span>)}
+            </div>
+          )}
+          <h1 class="post-title">{title}</h1>
+          {description && <p class="post-desc">{description}</p>}
+          <time class="post-date" datetime={pubDate.toISOString()}>{formattedDate}</time>
+        </div>
+
+        <div class="prose">
+          <slot />
+        </div>
+      </article>
+    </main>
+
+    <BlogTooltips client:idle />
+  </body>
+</html>
+
+<style>
+  header {
+    padding: 32px 48px 24px;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .back-link, .home-link {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .back-link:hover, .home-link:hover {
+    color: hsl(var(--foreground));
+  }
+
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 48px 80px;
+  }
+
+  .post-header {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    border: 1px solid hsl(var(--border));
+    padding: 2px 8px;
+  }
+
+  .post-title {
+    font-family: "EditorialNew", Georgia, serif;
+    font-size: 2.8rem;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: hsl(var(--foreground));
+    margin-bottom: 12px;
+  }
+
+  .post-desc {
+    font-size: 1rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .post-date {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 24px; }
+    main { padding: 32px 24px 60px; }
+    .post-title { font-size: 2rem; }
+  }
+</style>
