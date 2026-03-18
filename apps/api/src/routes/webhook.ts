@@ -38,24 +38,29 @@ export async function handleWebhook(request: Request, env: Env): Promise<Respons
     return json({ error: "url is required" }, 400);
   }
 
+  // Extract URL from text in case the client sends something like
+  // "Check out X on Spotify: https://open.spotify.com/track/abc?si=xyz"
+  const urlMatch = body.url.match(/https?:\/\/\S+/);
+  const rawUrl = urlMatch ? urlMatch[0] : body.url;
+
   try {
-    const source = detectSource(body.url);
+    const source = detectSource(rawUrl);
 
     let artImageUrl: string;
     let meta: Awaited<ReturnType<typeof fetchSoundCloudMeta>>;
 
     if (source === "spotify") {
-      const spotifyMeta = await fetchSpotifyMeta(body.url, env);
+      const spotifyMeta = await fetchSpotifyMeta(rawUrl, env);
       const { imageUrl, ...rest } = spotifyMeta;
       meta = rest;
       artImageUrl = imageUrl;
     } else {
       const oembedRes = await fetch(
-        `https://soundcloud.com/oembed?url=${encodeURIComponent(body.url)}&format=json`
+        `https://soundcloud.com/oembed?url=${encodeURIComponent(rawUrl)}&format=json`
       );
       const oembed = (await oembedRes.json()) as { thumbnail_url?: string };
       artImageUrl = oembed.thumbnail_url ?? "";
-      meta = await fetchSoundCloudMeta(body.url);
+      meta = await fetchSoundCloudMeta(rawUrl);
     }
 
     let artKey = "";
