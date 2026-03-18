@@ -7,6 +7,11 @@ main = "src/index.ts"
 binding = "ALBUMS"
 id = "991e0d00dbd647e7a413414180e5ce5f"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "cratedigger"
+database_id = "cfb24d67-bf97-4633-904f-8cc775838706"
+
 [[r2_buckets]]
 binding = "ALBUM_ART"
 bucket_name = "mikka-album-art"

@@ -1,6 +1,6 @@
 import type { Env } from "../index";
 import type { AlbumRecord } from "@mikka/cloudflare-utils";
-import { putAlbum, prependToIndex, putAlbumArt, getAlbumArtUrl } from "@mikka/cloudflare-utils";
+import { putAlbum, putAlbumArt, getAlbumArtUrl } from "@mikka/cloudflare-utils";
 import { detectSource, fetchSpotifyMeta, fetchSoundCloudMeta, fetchAlbumArt } from "../lib/metadata";
 
 function timingSafeEqual(a: string | null, b: string): boolean {
@@ -75,8 +75,7 @@ export async function handleWebhook(request: Request, env: Env): Promise<Respons
     }
 
     const record: AlbumRecord = { ...meta, artKey, artUrl };
-
-    await Promise.all([putAlbum(env, record), prependToIndex(env, record.id)]);
+    await putAlbum(env, record);
 
     return json({ id: record.id, ok: true });
   } catch (err) {

@@ -1,41 +1,74 @@
-import type { AlbumIndex, AlbumRecord, CratediggerEnv } from "./types";
+import type { AlbumRecord, CratediggerEnv } from "./types";
+
+interface AlbumRow {
+  id: string;
+  url: string;
+  source: string;
+  title: string;
+  artist: string;
+  album: string;
+  art_key: string;
+  art_url: string;
+  added_at: string;
+}
+
+function rowToRecord(row: AlbumRow): AlbumRecord {
+  return {
+    id: row.id,
+    url: row.url,
+    source: row.source as AlbumRecord["source"],
+    title: row.title,
+    artist: row.artist,
+    album: row.album,
+    artKey: row.art_key,
+    artUrl: row.art_url,
+    addedAt: row.added_at,
+  };
+}
 
 export async function getAlbum(
   env: CratediggerEnv,
   id: string
 ): Promise<AlbumRecord | null> {
-  const raw = await env.ALBUMS.get(`album:${id}`);
-  return raw ? (JSON.parse(raw) as AlbumRecord) : null;
+  const row = await env.DB.prepare("SELECT * FROM albums WHERE id = ?")
+    .bind(id)
+    .first<AlbumRow>();
+  return row ? rowToRecord(row) : null;
 }
 
 export async function putAlbum(
   env: CratediggerEnv,
   record: AlbumRecord
 ): Promise<void> {
-  await env.ALBUMS.put(`album:${record.id}`, JSON.stringify(record));
+  await env.DB.prepare(`
+    INSERT INTO albums (id, url, source, title, artist, album, art_key, art_url, added_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      url = excluded.url,
+      source = excluded.source,
+      title = excluded.title,
+      artist = excluded.artist,
+      album = excluded.album,
+      art_key = excluded.art_key,
+      art_url = excluded.art_url
+  `)
+    .bind(
+      record.id,
+      record.url,
+      record.source,
+      record.title,
+      record.artist,
+      record.album,
+      record.artKey,
+      record.artUrl,
+      record.addedAt
+    )
+    .run();
 }
 
-export async function getAlbumIndex(env: CratediggerEnv): Promise<AlbumIndex> {
-  const raw = await env.ALBUMS.get("albums:index");
-  return raw ? (JSON.parse(raw) as AlbumIndex) : [];
-}
-
-export async function prependToIndex(
-  env: CratediggerEnv,
-  id: string,
-  maxSize = 500
-): Promise<void> {
-  const index = await getAlbumIndex(env);
-  const next = [id, ...index.filter((i) => i !== id)].slice(0, maxSize);
-  await env.ALBUMS.put("albums:index", JSON.stringify(next));
-}
-
-export async function getAllAlbums(
-  env: CratediggerEnv
-): Promise<AlbumRecord[]> {
-  const index = await getAlbumIndex(env);
-  const records = await Promise.all(index.map((id) => getAlbum(env, id)));
-  return records.filter((r): r is AlbumRecord => r !== null);
+export async function getAlbumCount(env: CratediggerEnv): Promise<number> {
+  const row = await env.DB.prepare("SELECT COUNT(*) as count FROM albums").first<{ count: number }>();
+  return row?.count ?? 0;
 }
 
 export async function getAlbumsPage(
@@ -43,14 +76,17 @@ export async function getAlbumsPage(
   page: number,
   limit: number
 ): Promise<{ albums: AlbumRecord[]; total: number; hasMore: boolean }> {
-  const index = await getAlbumIndex(env);
-  const total = index.length;
-  const start = page * limit;
-  const slice = index.slice(start, start + limit);
-  const records = await Promise.all(slice.map((id) => getAlbum(env, id)));
+  const [countRow, { results }] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) as count FROM albums").first<{ count: number }>(),
+    env.DB.prepare("SELECT * FROM albums ORDER BY added_at DESC LIMIT ? OFFSET ?")
+      .bind(limit, page * limit)
+      .all<AlbumRow>(),
+  ]);
+
+  const total = countRow?.count ?? 0;
   return {
-    albums: records.filter((r): r is AlbumRecord => r !== null),
+    albums: results.map(rowToRecord),
     total,
-    hasMore: start + limit < total,
+    hasMore: page * limit + limit < total,
   };
 }

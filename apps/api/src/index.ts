@@ -6,6 +6,7 @@ import { handleAlbums } from "./routes/albums";
 
 export interface Env {
   ALBUMS: KVNamespace;
+  DB: D1Database;
   ALBUM_ART: R2Bucket;
   WEBHOOK_SECRET: string;
   SPOTIFY_CLIENT_ID: string;
