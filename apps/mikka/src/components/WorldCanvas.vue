@@ -129,7 +129,7 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
   ];
 }
 
-function runLayout(vw: number, vh: number) {
+function runLayout(vw: number, vh: number, resetOffset = true) {
   const nodes = buildNodes(vw, vh);
   const isMobile = vw < 640;
   const sx = vw * 0.28;
@@ -187,8 +187,10 @@ function runLayout(vw: number, vh: number) {
 
   worldOriginX.value = 2000 + vw / 2 - cx;
   worldOriginY.value = 2000 + vh / 2 - cy;
-  offsetX.value = 0;
-  offsetY.value = 0;
+  if (resetOffset) {
+    offsetX.value = 0;
+    offsetY.value = 0;
+  }
 }
 
 function pos(id: string) {
@@ -302,7 +304,7 @@ function onResize() {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     isMobile.value = window.innerWidth < 640;
-    runLayout(window.innerWidth, window.innerHeight);
+    runLayout(window.innerWidth, window.innerHeight, false);
   }, 100);
 }
 
