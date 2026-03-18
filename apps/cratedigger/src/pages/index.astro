@@ -10,7 +10,11 @@ import type { CratediggerEnv } from "@mikka/cloudflare-utils";
 const PAGE_SIZE = 24;
 const API_URL = import.meta.env.PUBLIC_API_URL ?? "https://api.mikka.link";
 
-let initialAlbums: Awaited<ReturnType<typeof getAlbumsPage>> = { albums: [], total: 0, hasMore: false };
+let initialAlbums: Awaited<ReturnType<typeof getAlbumsPage>> = {
+  albums: [],
+  total: 0,
+  hasMore: false,
+};
 
 try {
   const env = (Astro.locals as { runtime: { env: CratediggerEnv } }).runtime.env;
@@ -50,7 +54,14 @@ try {
           <NowPlaying client:only="vue" />
         </div>
       </div>
-      <p class="subtitle">some music i think you should listen to — <a href="https://mikka.link" class="subtitle-link">check out my website</a></p>
+
+      <p class="subtitle">
+        This is a crate of the type of music I like, a quick answer to people's question of 'what
+        kind of music do you listen to?'. If I gave you this link, I care about you enough to share
+        something that means a lot to me! ❤ -- <a href="https://mikka.link" class="subtitle-link"
+          >check out my website to see what else I do</a
+        >
+      </p>
     </header>
 
     <main>
@@ -122,5 +133,4 @@ try {
   .subtitle-link:hover {
     color: hsl(var(--foreground));
   }
-
 </style>
