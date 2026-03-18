@@ -1,7 +1,10 @@
-name = "mikka-site"
+name = "main-site"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./dist"
+
+[vars]
+PUBLIC_API_URL = "https://api.mikka.link"
 
 # Secrets: set via `wrangler secret put`
 # SPOTIFY_CLIENT_ID

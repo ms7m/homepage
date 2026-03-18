@@ -1,5 +1,10 @@
-import type { CratediggerEnv, AlbumRecord } from "@mikka/cloudflare-utils";
 import { createHash } from "node:crypto";
+import type { AlbumRecord } from "@mikka/cloudflare-utils";
+
+interface SpotifyEnv {
+  SPOTIFY_CLIENT_ID: string;
+  SPOTIFY_CLIENT_SECRET: string;
+}
 
 export function generateId(url: string): string {
   return createHash("sha256").update(url).digest("hex").slice(0, 12);
@@ -14,14 +19,12 @@ export function detectSource(url: string): "spotify" | "soundcloud" {
 
 export async function fetchSpotifyMeta(
   url: string,
-  env: CratediggerEnv
+  env: SpotifyEnv
 ): Promise<Omit<AlbumRecord, "artKey" | "artUrl"> & { imageUrl: string }> {
-  // Extract track ID from URL
   const trackIdMatch = url.match(/track\/([a-zA-Z0-9]+)/);
   if (!trackIdMatch) throw new Error("Invalid Spotify track URL");
   const trackId = trackIdMatch[1];
 
-  // Get access token (client credentials flow)
   const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
@@ -34,7 +37,6 @@ export async function fetchSpotifyMeta(
   if (!tokenRes.ok) throw new Error("Failed to get Spotify token");
   const { access_token } = (await tokenRes.json()) as { access_token: string };
 
-  // Fetch track data
   const trackRes = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
     headers: { Authorization: `Bearer ${access_token}` },
   });
@@ -46,10 +48,8 @@ export async function fetchSpotifyMeta(
     album: { name: string; images: { url: string }[] };
   };
 
-  const id = generateId(url);
-
   return {
-    id,
+    id: generateId(url),
     url,
     source: "spotify",
     title: track.name,
@@ -61,8 +61,7 @@ export async function fetchSpotifyMeta(
 }
 
 export async function fetchSoundCloudMeta(
-  url: string,
-  _env: CratediggerEnv
+  url: string
 ): Promise<Omit<AlbumRecord, "artKey" | "artUrl">> {
   const oembedUrl = `https://soundcloud.com/oembed?url=${encodeURIComponent(url)}&format=json`;
   const res = await fetch(oembedUrl);
@@ -71,14 +70,12 @@ export async function fetchSoundCloudMeta(
   const data = (await res.json()) as {
     title: string;
     author_name: string;
-    thumbnail_url: string;
   };
 
-  const id = generateId(url);
   const [title, ...rest] = data.title.split(" - ");
 
   return {
-    id,
+    id: generateId(url),
     url,
     source: "soundcloud",
     title: rest.length > 0 ? rest.join(" - ") : title,
@@ -88,7 +85,9 @@ export async function fetchSoundCloudMeta(
   };
 }
 
-export async function fetchAlbumArt(artUrl: string): Promise<{ buffer: ArrayBuffer; contentType: string }> {
+export async function fetchAlbumArt(
+  artUrl: string
+): Promise<{ buffer: ArrayBuffer; contentType: string }> {
   const res = await fetch(artUrl);
   if (!res.ok) throw new Error("Failed to fetch album art");
   const contentType = res.headers.get("content-type") ?? "image/jpeg";

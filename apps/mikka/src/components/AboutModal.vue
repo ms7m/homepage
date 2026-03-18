@@ -9,7 +9,7 @@ const contentHtml = ref("");
 async function loadContent() {
   if (contentHtml.value) return;
   try {
-    const res = await fetch("/api/about");
+    const res = await fetch(`${import.meta.env.PUBLIC_API_URL}/about`);
     const data = await res.json();
     contentHtml.value = data.html ?? "";
   } catch {}

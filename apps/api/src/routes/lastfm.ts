@@ -1,7 +1,5 @@
-import type { APIRoute } from "astro";
+import type { Env } from "../index";
 
-const LASTFM_KEY = import.meta.env.LASTFM_API_KEY;
-const USER = import.meta.env.LASTFM_USER;
 const BASE = "https://ws.audioscrobbler.com/2.0/";
 const PLACEHOLDER = "2a96cbd8b46e442fc41c2b86b821562f";
 
@@ -15,30 +13,29 @@ function bestImage(images: any[]): string {
   return "";
 }
 
-async function resolveTrackArt(artist: string, track: string): Promise<string> {
+async function resolveTrackArt(artist: string, track: string, apiKey: string): Promise<string> {
   const res = await fetch(
-    `${BASE}?method=track.getinfo&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&api_key=${LASTFM_KEY}&format=json`
+    `${BASE}?method=track.getinfo&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&api_key=${apiKey}&format=json`
   );
-  const data = await res.json() as any;
+  const data = (await res.json()) as any;
   return bestImage(data.track?.album?.image ?? []);
 }
 
 async function resolveArtistImage(artistName: string): Promise<string> {
-  // Search MusicBrainz for MBID then get Wikipedia image relation
   try {
     const searchRes = await fetch(
       `https://musicbrainz.org/ws/2/artist/?query=${encodeURIComponent(artistName)}&limit=1&fmt=json`,
-      { headers: { "User-Agent": "mikka.link/1.0 (mustafa@mikka.link)" } }
+      { headers: { "User-Agent": "mikka.link/1.0 (hi@mikka.link)" } }
     );
-    const searchData = await searchRes.json() as any;
+    const searchData = (await searchRes.json()) as any;
     const mbid = searchData.artists?.[0]?.id;
     if (!mbid) return "";
 
     const relRes = await fetch(
       `https://musicbrainz.org/ws/2/artist/${mbid}?inc=url-rels&fmt=json`,
-      { headers: { "User-Agent": "mikka.link/1.0 (mustafa@mikka.link)" } }
+      { headers: { "User-Agent": "mikka.link/1.0 (hi@mikka.link)" } }
     );
-    const relData = await relRes.json() as any;
+    const relData = (await relRes.json()) as any;
     const wikiImg = relData.relations?.find((r: any) => r.type === "image");
     return wikiImg?.url?.resource ?? "";
   } catch {
@@ -46,12 +43,18 @@ async function resolveArtistImage(artistName: string): Promise<string> {
   }
 }
 
-export const GET: APIRoute = async () => {
+export async function handleLastFm(_request: Request, env: Env): Promise<Response> {
+  const json = (data: unknown, status = 200) =>
+    new Response(JSON.stringify(data), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
+
   try {
     const [userRes, topTrackRes, topArtistRes] = await Promise.all([
-      fetch(`${BASE}?method=user.getinfo&user=${USER}&api_key=${LASTFM_KEY}&format=json`),
-      fetch(`${BASE}?method=user.gettoptracks&user=${USER}&api_key=${LASTFM_KEY}&format=json&period=7day&limit=1`),
-      fetch(`${BASE}?method=user.gettopartists&user=${USER}&api_key=${LASTFM_KEY}&format=json&period=7day&limit=1`),
+      fetch(`${BASE}?method=user.getinfo&user=${env.LASTFM_USER}&api_key=${env.LASTFM_API_KEY}&format=json`),
+      fetch(`${BASE}?method=user.gettoptracks&user=${env.LASTFM_USER}&api_key=${env.LASTFM_API_KEY}&format=json&period=7day&limit=1`),
+      fetch(`${BASE}?method=user.gettopartists&user=${env.LASTFM_USER}&api_key=${env.LASTFM_API_KEY}&format=json&period=7day&limit=1`),
     ]);
 
     const [userData, topTrackData, topArtistData] = await Promise.all([
@@ -68,7 +71,7 @@ export const GET: APIRoute = async () => {
 
     let trackArt = "";
     if (rawTrack) {
-      try { trackArt = await resolveTrackArt(rawTrack.artist.name, rawTrack.name); } catch {}
+      try { trackArt = await resolveTrackArt(rawTrack.artist.name, rawTrack.name, env.LASTFM_API_KEY); } catch {}
     }
 
     let artistImageUrl = "";
@@ -76,28 +79,27 @@ export const GET: APIRoute = async () => {
       try { artistImageUrl = await resolveArtistImage(rawArtist.name); } catch {}
     }
 
-    return new Response(JSON.stringify({
+    return json({
       user,
-      topTrack: rawTrack ? {
-        name: rawTrack.name,
-        artist: rawTrack.artist.name,
-        artUrl: trackArt,
-        url: rawTrack.url,
-        playcount: rawTrack.playcount,
-      } : null,
-      topArtist: rawArtist ? {
-        name: rawArtist.name,
-        url: rawArtist.url,
-        playcount: rawArtist.playcount,
-        imageUrl: artistImageUrl,
-      } : null,
-    }), {
-      headers: { "Content-Type": "application/json" },
+      topTrack: rawTrack
+        ? {
+            name: rawTrack.name,
+            artist: rawTrack.artist.name,
+            artUrl: trackArt,
+            url: rawTrack.url,
+            playcount: rawTrack.playcount,
+          }
+        : null,
+      topArtist: rawArtist
+        ? {
+            name: rawArtist.name,
+            url: rawArtist.url,
+            playcount: rawArtist.playcount,
+            imageUrl: artistImageUrl,
+          }
+        : null,
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ error: String(e) }, 500);
   }
-};
+}

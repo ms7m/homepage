@@ -1,7 +1,7 @@
-name = "cratedigger"
+name = "mikka-api"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "./dist"
+main = "src/index.ts"
 
 [[kv_namespaces]]
 binding = "ALBUMS"
@@ -11,8 +11,15 @@ id = "991e0d00dbd647e7a413414180e5ce5f"
 binding = "ALBUM_ART"
 bucket_name = "mikka-album-art"
 
+[[rules]]
+type = "Text"
+globs = ["**/*.md"]
+
 # Secrets: set via `wrangler secret put`
 # WEBHOOK_SECRET
 # SPOTIFY_CLIENT_ID
 # SPOTIFY_CLIENT_SECRET
-# R2_PUBLIC_URL  (e.g. https://art.mikka.link)
+# SPOTIFY_REFRESH_TOKEN
+# LASTFM_API_KEY
+# LASTFM_USER
+# R2_PUBLIC_URL

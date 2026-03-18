@@ -20,7 +20,7 @@ let interval: ReturnType<typeof setInterval>;
 
 async function fetchNowPlaying() {
   try {
-    const res = await fetch("/api/now-playing");
+    const res = await fetch(`${import.meta.env.PUBLIC_API_URL}/now-playing`);
     if (!res.ok) return;
     const data = await res.json();
 

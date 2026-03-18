@@ -6,7 +6,7 @@ let interval: ReturnType<typeof setInterval>;
 
 async function fetchData() {
   try {
-    const res = await fetch("/api/lastfm");
+    const res = await fetch(`${import.meta.env.PUBLIC_API_URL}/lastfm`);
     const data = await res.json();
     if (data.user) totalScrobbles.value = data.user.totalScrobbles;
   } catch {}
