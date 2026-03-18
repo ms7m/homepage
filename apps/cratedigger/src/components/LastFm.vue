@@ -1,5 +1,19 @@
 <script setup lang="ts">
-defineProps<{ scrobbles: string | null }>();
+import { ref, onMounted, onUnmounted } from "vue";
+
+const scrobbles = ref<string | null>(null);
+let interval: ReturnType<typeof setInterval>;
+
+async function fetchData() {
+  try {
+    const res = await fetch(`${import.meta.env.PUBLIC_API_URL}/lastfm`);
+    const data = await res.json();
+    if (data.user) scrobbles.value = data.user.totalScrobbles;
+  } catch {}
+}
+
+onMounted(() => { fetchData(); interval = setInterval(fetchData, 60000); });
+onUnmounted(() => clearInterval(interval));
 </script>
 
 <template>

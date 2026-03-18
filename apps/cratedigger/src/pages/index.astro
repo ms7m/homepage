@@ -11,17 +11,10 @@ const PAGE_SIZE = 24;
 const API_URL = import.meta.env.PUBLIC_API_URL ?? "https://api.mikka.link";
 
 let initialAlbums: Awaited<ReturnType<typeof getAlbumsPage>> = { albums: [], total: 0, hasMore: false };
-let scrobbles: string | null = null;
 
 try {
   const env = (Astro.locals as { runtime: { env: CratediggerEnv } }).runtime.env;
-  const [albumsResult, lastfmRes] = await Promise.all([
-    getAlbumsPage(env, 0, PAGE_SIZE),
-    fetch(`${API_URL}/lastfm`),
-  ]);
-  initialAlbums = albumsResult;
-  const lastfmData = await lastfmRes.json() as any;
-  scrobbles = lastfmData?.user?.totalScrobbles ?? null;
+  initialAlbums = await getAlbumsPage(env, 0, PAGE_SIZE);
 } catch {
   // dev mode without wrangler
 }
@@ -53,7 +46,7 @@ try {
           <span class="record-count">{initialAlbums.total} records</span>
         </div>
         <div class="header-right">
-          <LastFm scrobbles={scrobbles} />
+          <LastFm client:only="vue" />
           <NowPlaying client:only="vue" />
         </div>
       </div>
