@@ -10,7 +10,7 @@
 # @raycast.packageName CrateDigger
 
 WEBHOOK_URL="https://api.mikka.link/webhook"
-WEBHOOK_SECRET="6be0bcfc50504c7a81b4e2371770387287ea191444a5cdf6baabb677ab24ce36"
+WEBHOOK_SECRET="21b1a475e9c0d33f704dda9b023d916e9bb2f094e4d7e938ff8c2278640e7b7e"
 
 # Get currently playing track from Spotify via AppleScript
 SPOTIFY_URL=$(osascript <<'EOF'
