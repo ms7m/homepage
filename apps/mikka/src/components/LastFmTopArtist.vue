@@ -157,9 +157,7 @@ onUnmounted(() => clearInterval(interval));
   letter-spacing: -0.02em;
   color: hsl(var(--foreground) / 0.9);
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
 }
 
 .lfm-artist-sub {

@@ -261,20 +261,14 @@ onUnmounted(() => clearInterval(interval));
   letter-spacing: -0.02em;
   color: hsl(var(--foreground) / 0.85);
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 130px;
+  overflow-wrap: break-word;
 }
 
 .np-sub {
   font-size: 0.65rem;
   color: hsl(var(--muted-foreground));
   letter-spacing: 0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 130px;
+  overflow-wrap: break-word;
 }
 
 .np-arrow {
@@ -353,9 +347,7 @@ onUnmounted(() => clearInterval(interval));
 .np-back-track {
   font-size: 0.6rem;
   color: rgba(255,255,255,0.5);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
   margin: 0;
 }
 

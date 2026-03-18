@@ -112,7 +112,7 @@ onUnmounted(() => clearInterval(interval));
   letter-spacing: -0.03em;
   color: hsl(var(--foreground));
   line-height: 1;
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
 
 .lastfm-count-label {

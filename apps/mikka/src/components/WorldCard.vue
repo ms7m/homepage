@@ -189,9 +189,7 @@ function toggleFlip(e: MouseEvent) {
   font-size: 0.65rem;
   color: hsl(var(--muted-foreground));
   letter-spacing: 0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
 }
 
 .card-arrow {
