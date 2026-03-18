@@ -78,7 +78,7 @@ onUnmounted(() => clearInterval(interval));
   text-decoration: none;
   color: inherit;
   transition: border-color 0.2s, background 0.2s;
-  max-width: 220px;
+  min-width: 0;
 }
 
 .np:hover {
