@@ -46,11 +46,11 @@ try {
     <header>
       <div class="header-inner">
         <div class="header-left">
-          <h1 class="site-title">cratedigger</h1>
           <span class="record-count">{initialAlbums.total} records</span>
+          <h1 class="site-title">cratedigger</h1>
         </div>
         <div class="header-right">
-          <LastFm client:only="vue" />
+          <LastFm client:only="vue" class="scrobbles-desktop" />
           <NowPlaying client:only="vue" />
         </div>
       </div>
@@ -62,6 +62,9 @@ try {
           >check out my website to see what else I do</a
         >
       </p>
+      <div class="scrobbles-mobile">
+        <LastFm client:only="vue" />
+      </div>
     </header>
 
     <main>
@@ -108,6 +111,7 @@ try {
     letter-spacing: -0.03em;
     line-height: 1;
     color: hsl(var(--foreground));
+    order: 1;
   }
 
   .record-count {
@@ -115,12 +119,42 @@ try {
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: hsl(var(--muted-foreground));
+    order: 2;
+  }
+
+  .scrobbles-mobile {
+    display: none;
   }
 
   .subtitle {
     margin-top: 8px;
     font-size: 0.8rem;
     color: hsl(var(--muted-foreground));
+  }
+
+  @media (max-width: 639px) {
+    .header-left {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .record-count {
+      order: 1;
+    }
+
+    .site-title {
+      order: 2;
+    }
+
+    .scrobbles-desktop {
+      display: none !important;
+    }
+
+    .scrobbles-mobile {
+      display: block;
+      margin-top: 10px;
+    }
   }
 
   .subtitle-link {
