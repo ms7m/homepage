@@ -130,6 +130,20 @@ function toggleFlip(e: MouseEvent) {
   overflow: hidden;
 }
 
+@media (max-width: 639px) {
+  .card-image {
+    flex: 0 0 130px;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+  }
+
+  .card-sub {
+    font-size: 0.6rem;
+  }
+}
+
 .card-image img {
   width: 100%;
   height: 100%;

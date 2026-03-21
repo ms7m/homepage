@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
-import {
-  forceSimulation,
-  forceCollide,
-  forceX,
-  forceY,
-  type SimulationNodeDatum,
-} from "d3-force";
+import { forceSimulation, forceCollide, forceX, forceY, type SimulationNodeDatum } from "d3-force";
 import WorldCard from "./WorldCard.vue";
 import AboutCard from "./AboutCard.vue";
 import NowPlaying from "./NowPlaying.vue";
@@ -81,7 +75,7 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
   const cardW = isMobile ? 150 : CARD_W;
   const cardH = isMobile ? 230 : CARD_H;
   const smallW = isMobile ? 140 : SMALL_W;
-  const smallH = isMobile ? 80  : SMALL_H;
+  const smallH = isMobile ? 80 : SMALL_H;
 
   const sx = vw * 0.28;
   const sy = vh * 0.28;
@@ -97,18 +91,18 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
         x: (c.cx / 400) * sx * 0.4,
         y: (c.cy / 400) * sy * 0.4,
       })),
-      { id: "about",         w: smallW, h: smallH, x:  sx * 0.3,  y:  sy * 0.5  },
-      { id: "now-playing",   w: cardW,  h: cardH,  x: -sx * 0.3,  y:  sy * 0.6  },
-      { id: "theme-toggle",  w: 72,     h: 72,     x: -sx * 0.5,  y: -sy * 0.5  },
-      { id: "lastfm",        w: 140,    h: 80,     x:  sx * 0.4,  y: -sy * 0.5  },
-      { id: "lastfm-track",  w: 140,    h: 200,    x:  sx * 0.5,  y:  0         },
-      { id: "lastfm-artist", w: 150,    h: 200,    x: -sx * 0.4,  y: -sy * 0.4  },
-      { id: "ace",           w: cardW,  h: cardH,  x:  0,         y: -sy * 0.6  },
-      { id: "twitter",       w: smallW, h: smallH, x:  sx * 0.2,  y:  sy * 0.7  },
-      { id: "github",        w: smallW, h: smallH, x: -sx * 0.2,  y: -sy * 0.7  },
-      { id: "linkedin",      w: smallW, h: smallH, x:  sx * 0.4,  y: -sy * 0.6  },
-      { id: "passport",      w: 180,    h: 255,    x: -sx * 0.5,  y:  sy * 1.0  },
-      { id: "snoopy",        w: 100,    h: 100,    x:  sx * 0.6,  y: -sy * 0.8  },
+      { id: "about", w: smallW, h: smallH, x: sx * 0.3, y: sy * 0.5 },
+      { id: "now-playing", w: cardW, h: cardH, x: -sx * 0.3, y: sy * 0.6 },
+      { id: "theme-toggle", w: 72, h: 72, x: -sx * 0.5, y: -sy * 0.5 },
+      { id: "lastfm", w: 140, h: 80, x: sx * 0.4, y: -sy * 0.5 },
+      { id: "lastfm-track", w: 140, h: 200, x: sx * 0.5, y: 0 },
+      { id: "lastfm-artist", w: 150, h: 200, x: -sx * 0.4, y: -sy * 0.4 },
+      { id: "ace", w: cardW, h: cardH, x: 0, y: -sy * 0.6 },
+      { id: "twitter", w: smallW, h: smallH, x: sx * 0.2, y: sy * 0.7 },
+      { id: "github", w: smallW, h: smallH, x: -sx * 0.2, y: -sy * 0.7 },
+      { id: "linkedin", w: smallW, h: smallH, x: sx * 0.4, y: -sy * 0.6 },
+      { id: "passport", w: 180, h: 255, x: -sx * 0.5, y: sy * 1.0 },
+      { id: "snoopy", w: 100, h: 100, x: sx * 0.6, y: -sy * 0.8 },
     ];
   }
 
@@ -120,19 +114,19 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
       x: (c.cx / 400) * sx,
       y: (c.cy / 400) * sy,
     })),
-    { id: "about",         w: smallW, h: smallH, x:  sx * 0.9, y:  sy * 0.8 },
-    { id: "now-playing",   w: cardW,  h: cardH,  x:  0,        y:  sy * 0.9 },
-    { id: "theme-toggle",  w: 80,     h: 80,     x: -sx * 0.9, y:  sy * 0.8 },
-    { id: "lastfm",        w: 150,    h: 80,     x: -sx * 0.6, y: -sy * 0.9 },
-    { id: "lastfm-track",  w: 160,    h: 220,    x: -sx * 0.3, y: -sy * 1.0 },
-    { id: "lastfm-artist", w: 170,    h: 170,    x: -sx * 0.7, y: -sy * 0.7 },
-    { id: "ace",           w: cardW,  h: cardH,  x: -sx * 0.4, y: -sy * 0.5 },
-    { id: "twitter",       w: smallW, h: smallH, x:  sx * 0.7, y: -sy * 0.6 },
-    { id: "linkedin",      w: smallW, h: smallH, x:  sx * 1.1, y:  sy * 0.3 },
-    { id: "github",        w: cardW,  h: smallH, x: -sx * 0.8, y:  0        },
-    { id: "metrocard",     w: 340,    h: 215,    x:  sx * 2.2, y: -sy * 1.8 },
-    { id: "passport",      w: 260,    h: 370,    x: -sx * 1.5, y:  sy * 1.2 },
-    { id: "snoopy",        w: 130,    h: 130,    x:  sx * 1.3, y:  sy * 0.6 },
+    { id: "about", w: smallW, h: smallH, x: sx * 0.9, y: sy * 0.8 },
+    { id: "now-playing", w: cardW, h: cardH, x: 0, y: sy * 0.9 },
+    { id: "theme-toggle", w: 80, h: 80, x: -sx * 0.9, y: sy * 0.8 },
+    { id: "lastfm", w: 150, h: 80, x: -sx * 0.6, y: -sy * 0.9 },
+    { id: "lastfm-track", w: 160, h: 220, x: -sx * 0.3, y: -sy * 1.0 },
+    { id: "lastfm-artist", w: 170, h: 170, x: -sx * 0.7, y: -sy * 0.7 },
+    { id: "ace", w: cardW, h: cardH, x: -sx * 0.4, y: -sy * 0.5 },
+    { id: "twitter", w: smallW, h: smallH, x: sx * 0.7, y: -sy * 0.6 },
+    { id: "linkedin", w: smallW, h: smallH, x: sx * 1.1, y: sy * 0.3 },
+    { id: "github", w: cardW, h: smallH, x: -sx * 0.8, y: 0 },
+    { id: "metrocard", w: 340, h: 215, x: sx * 2.2, y: -sy * 1.8 },
+    { id: "passport", w: 260, h: 370, x: -sx * 1.5, y: sy * 1.2 },
+    { id: "snoopy", w: 130, h: 130, x: sx * 1.3, y: sy * 0.6 },
   ];
 }
 
@@ -143,26 +137,32 @@ function runLayout(vw: number, vh: number, resetOffset = true) {
   const sy = vh * 0.28;
 
   const simulation = forceSimulation<ForceNode>(nodes)
-    .force("x", forceX<ForceNode>((d) => {
-      if (isMobile) return 0;
-      if (d.id === "metrocard") return sx * 2.2;
-      if (d.id === "passport") return -sx * 1.5;
-      if (d.id === "about") return vw * 0.25;
-      if (d.id === "github") return -vw * 0.18;
-      return 0;
-    }).strength((d) => (d.id === "metrocard" || d.id === "passport") ? 1 : 0.12))
-    .force("y", forceY<ForceNode>((d) => {
-      if (isMobile) return 0;
-      if (d.id === "metrocard") return -sy * 1.8;
-      if (d.id === "passport") return sy * 1.6;
-      if (d.id === "about" || d.id === "now-playing") return sy * 0.9;
-      return 0;
-    }).strength((d) => (d.id === "metrocard" || d.id === "passport") ? 1 : 0.12))
+    .force(
+      "x",
+      forceX<ForceNode>((d) => {
+        if (isMobile) return 0;
+        if (d.id === "metrocard") return sx * 2.2;
+        if (d.id === "passport") return -sx * 1.5;
+        if (d.id === "about") return vw * 0.25;
+        if (d.id === "github") return -vw * 0.18;
+        return 0;
+      }).strength((d) => (d.id === "metrocard" || d.id === "passport" ? 1 : 0.12))
+    )
+    .force(
+      "y",
+      forceY<ForceNode>((d) => {
+        if (isMobile) return 0;
+        if (d.id === "metrocard") return -sy * 1.8;
+        if (d.id === "passport") return sy * 1.6;
+        if (d.id === "about" || d.id === "now-playing") return sy * 0.9;
+        return 0;
+      }).strength((d) => (d.id === "metrocard" || d.id === "passport" ? 1 : 0.12))
+    )
     .force(
       "collide",
-      forceCollide<ForceNode>((d) =>
-        Math.sqrt((d.w / 2 + PADDING) ** 2 + (d.h / 2 + PADDING) ** 2)
-      ).strength(1).iterations(6)
+      forceCollide<ForceNode>((d) => Math.sqrt((d.w / 2 + PADDING) ** 2 + (d.h / 2 + PADDING) ** 2))
+        .strength(1)
+        .iterations(6)
     )
     .stop();
 
@@ -197,7 +197,9 @@ function runLayout(vw: number, vh: number, resetOffset = true) {
   worldOriginX.value = 2000 + vw / 2 - cx;
   worldOriginY.value = 2000 + vh / 2 - cy;
   if (resetOffset) {
-    offsetX.value = 0;
+    // On mobile, pan right so about + project cards are visible first
+    // (passport is seeded to the left and should start off-screen)
+    offsetX.value = vw < 640 ? vw * -0.3 : 0;
     offsetY.value = 0;
   }
 }
@@ -224,7 +226,12 @@ let lastOffsetX = 0;
 let lastOffsetY = 0;
 
 function onMouseDown(e: MouseEvent) {
-  if ((e.target as HTMLElement).closest(".world-card, .about-card, .np-card, .location-card, .theme-card, .lastfm-card, .toptrack-card, .social-card")) return;
+  if (
+    (e.target as HTMLElement).closest(
+      ".world-card, .about-card, .np-card, .location-card, .theme-card, .lastfm-card, .toptrack-card, .social-card"
+    )
+  )
+    return;
   isDragging.value = true;
   canvasRef.value?.classList.add("is-dragging");
   startX = e.clientX;
@@ -245,7 +252,12 @@ function onMouseUp() {
 }
 
 function onTouchStart(e: TouchEvent) {
-  if ((e.target as HTMLElement).closest(".world-card, .about-card, .np-card, .location-card, .theme-card, .lastfm-card, .toptrack-card, .social-card")) return;
+  if (
+    (e.target as HTMLElement).closest(
+      ".world-card, .about-card, .np-card, .location-card, .theme-card, .lastfm-card, .toptrack-card, .social-card"
+    )
+  )
+    return;
   const t = e.touches[0];
   isDragging.value = true;
   startX = t.clientX;
@@ -261,7 +273,9 @@ function onTouchMove(e: TouchEvent) {
   offsetY.value = lastOffsetY + (t.clientY - startY);
 }
 
-function onTouchEnd() { isDragging.value = false; }
+function onTouchEnd() {
+  isDragging.value = false;
+}
 
 // D-pad momentum
 const MAX_SPEED = 12;
@@ -347,15 +361,14 @@ onUnmounted(() => {
 
 <template>
   <div ref="canvasRef" class="canvas" @mousedown="onMouseDown" @touchstart.passive="onTouchStart">
-    <div class="world" :class="{ 'is-dragging': isDragging }" :style="{ transform: `translate(${offsetX}px, ${offsetY}px)` }">
+    <div
+      class="world"
+      :class="{ 'is-dragging': isDragging }"
+      :style="{ transform: `translate(${offsetX}px, ${offsetY}px)` }"
+    >
       <div class="grid-bg" />
 
-      <WorldCard
-        v-for="card in cards"
-        :key="card.href"
-        v-bind="card"
-        :style="pos(card.href)"
-      />
+      <WorldCard v-for="card in cards" :key="card.href" v-bind="card" :style="pos(card.href)" />
 
       <AboutCard :style="pos('about')" @click="aboutOpen = true" />
       <NowPlaying :style="pos('now-playing')" />

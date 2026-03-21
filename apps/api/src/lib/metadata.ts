@@ -4,6 +4,29 @@ import type { AlbumRecord, RecordType } from "@mikka/cloudflare-utils";
 interface SpotifyEnv {
   SPOTIFY_CLIENT_ID: string;
   SPOTIFY_CLIENT_SECRET: string;
+  ALBUMS: KVNamespace;
+}
+
+const SPOTIFY_TOKEN_CACHE_KEY = "spotify:access_token";
+
+export async function getSpotifyToken(env: SpotifyEnv): Promise<string> {
+  const cached = await env.ALBUMS.get(SPOTIFY_TOKEN_CACHE_KEY);
+  if (cached) return cached;
+
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${btoa(`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`)}`,
+    },
+    body: "grant_type=client_credentials",
+  });
+  if (!res.ok) throw new Error("Failed to get Spotify token");
+  const { access_token, expires_in } = (await res.json()) as { access_token: string; expires_in: number };
+
+  // Cache with a 5 minute buffer before actual expiry
+  await env.ALBUMS.put(SPOTIFY_TOKEN_CACHE_KEY, access_token, { expirationTtl: expires_in - 300 });
+  return access_token;
 }
 
 const SET_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
@@ -23,17 +46,7 @@ export async function fetchSpotifyMeta(
   url: string,
   env: SpotifyEnv
 ): Promise<Omit<AlbumRecord, "artKey" | "artUrl"> & { imageUrl: string }> {
-  const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${btoa(`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`)}`,
-    },
-    body: "grant_type=client_credentials",
-  });
-
-  if (!tokenRes.ok) throw new Error("Failed to get Spotify token");
-  const { access_token } = (await tokenRes.json()) as { access_token: string };
+  const access_token = await getSpotifyToken(env);
 
   if (url.includes("/album/")) {
     const albumIdMatch = url.match(/album\/([a-zA-Z0-9]+)/);
