@@ -1,9 +1,10 @@
-import type { AlbumRecord, CratediggerEnv } from "./types";
+import type { AlbumRecord, CratediggerEnv, RecordType } from "./types";
 
 interface AlbumRow {
   id: string;
   url: string;
   source: string;
+  type: string;
   title: string;
   artist: string;
   album: string;
@@ -17,6 +18,7 @@ function rowToRecord(row: AlbumRow): AlbumRecord {
     id: row.id,
     url: row.url,
     source: row.source as AlbumRecord["source"],
+    type: (row.type ?? "track") as RecordType,
     title: row.title,
     artist: row.artist,
     album: row.album,
@@ -41,11 +43,12 @@ export async function putAlbum(
   record: AlbumRecord
 ): Promise<void> {
   await env.DB.prepare(`
-    INSERT INTO albums (id, url, source, title, artist, album, art_key, art_url, added_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO albums (id, url, source, type, title, artist, album, art_key, art_url, added_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
       url = excluded.url,
       source = excluded.source,
+      type = excluded.type,
       title = excluded.title,
       artist = excluded.artist,
       album = excluded.album,
@@ -56,6 +59,7 @@ export async function putAlbum(
       record.id,
       record.url,
       record.source,
+      record.type,
       record.title,
       record.artist,
       record.album,
@@ -71,15 +75,35 @@ export async function getAlbumCount(env: CratediggerEnv): Promise<number> {
   return row?.count ?? 0;
 }
 
+export async function getTypeCounts(
+  env: CratediggerEnv
+): Promise<{ tracks: number; sets: number; albums: number }> {
+  const { results } = await env.DB.prepare(
+    "SELECT type, COUNT(*) as count FROM albums GROUP BY type"
+  ).all<{ type: string; count: number }>();
+
+  const map: Record<string, number> = {};
+  for (const row of results) map[row.type] = row.count;
+  return { tracks: map.track ?? 0, sets: map.set ?? 0, albums: map.album ?? 0 };
+}
+
 export async function getAlbumsPage(
   env: CratediggerEnv,
   page: number,
-  limit: number
+  limit: number,
+  type?: RecordType
 ): Promise<{ albums: AlbumRecord[]; total: number; hasMore: boolean }> {
+  const where = type ? "WHERE type = ?" : "";
+  const bindings = type
+    ? [limit, page * limit, type]
+    : [limit, page * limit];
+
   const [countRow, { results }] = await Promise.all([
-    env.DB.prepare("SELECT COUNT(*) as count FROM albums").first<{ count: number }>(),
-    env.DB.prepare("SELECT * FROM albums ORDER BY added_at DESC LIMIT ? OFFSET ?")
-      .bind(limit, page * limit)
+    type
+      ? env.DB.prepare(`SELECT COUNT(*) as count FROM albums WHERE type = ?`).bind(type).first<{ count: number }>()
+      : env.DB.prepare("SELECT COUNT(*) as count FROM albums").first<{ count: number }>(),
+    env.DB.prepare(`SELECT * FROM albums ${where} ORDER BY added_at DESC LIMIT ? OFFSET ?`)
+      .bind(...(type ? [type, limit, page * limit] : [limit, page * limit]))
       .all<AlbumRow>(),
   ]);
 

@@ -60,7 +60,7 @@ export async function handleWebhook(request: Request, env: Env): Promise<Respons
       );
       const oembed = (await oembedRes.json()) as { thumbnail_url?: string };
       artImageUrl = oembed.thumbnail_url ?? "";
-      meta = await fetchSoundCloudMeta(rawUrl);
+      meta = await fetchSoundCloudMeta(rawUrl, env.SOUNDCLOUD_CLIENT_ID);
     }
 
     let artKey = "";

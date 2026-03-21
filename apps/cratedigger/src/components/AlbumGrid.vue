@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AlbumRecord } from "@mikka/cloudflare-utils";
+import type { AlbumRecord, RecordType } from "@mikka/cloudflare-utils";
 import { ref, onMounted, onUnmounted } from "vue";
 
 const props = defineProps<{
@@ -8,8 +8,16 @@ const props = defineProps<{
   apiUrl: string;
 }>();
 
+type Tab = RecordType;
+const TABS: { key: Tab; label: string }[] = [
+  { key: "track", label: "Tracks" },
+  { key: "set", label: "Sets" },
+  { key: "album", label: "Albums" },
+];
+
 const PAGE_SIZE = 24;
 
+const activeTab = ref<Tab>("track");
 const albums = ref<AlbumRecord[]>(props.initialAlbums);
 const page = ref(1);
 const hasMore = ref(props.initialAlbums.length < props.total);
@@ -18,17 +26,33 @@ const sentinel = ref<HTMLDivElement | null>(null);
 const selected = ref<AlbumRecord | null>(null);
 const flipped = ref(false);
 
-async function loadMore() {
-  if (loading.value || !hasMore.value) return;
+async function loadPage(tab: Tab, pageNum: number, append = false) {
+  if (loading.value) return;
   loading.value = true;
   try {
-    const res = await fetch(`${props.apiUrl}/albums?page=${page.value}&limit=${PAGE_SIZE}`);
+    const res = await fetch(`${props.apiUrl}/albums?page=${pageNum}&limit=${PAGE_SIZE}&type=${tab}`);
     const data = await res.json() as { albums: AlbumRecord[]; total: number; hasMore: boolean };
-    albums.value.push(...data.albums);
+    if (append) {
+      albums.value.push(...data.albums);
+    } else {
+      albums.value = data.albums;
+    }
     hasMore.value = data.hasMore;
-    page.value++;
+    page.value = pageNum + 1;
   } catch {}
   loading.value = false;
+}
+
+async function switchTab(tab: Tab) {
+  if (tab === activeTab.value) return;
+  activeTab.value = tab;
+  page.value = 1;
+  await loadPage(tab, 0, false);
+}
+
+async function loadMore() {
+  if (loading.value || !hasMore.value) return;
+  await loadPage(activeTab.value, page.value, true);
 }
 
 function open(album: AlbumRecord) {
@@ -56,6 +80,9 @@ onMounted(() => {
     if (entries[0]?.isIntersecting) loadMore();
   }, { rootMargin: "200px" });
   if (sentinel.value) observer.observe(sentinel.value);
+
+  // Load initial tab from API (initialAlbums has no type filter)
+  loadPage("track", 0, false);
 });
 
 onUnmounted(() => {
@@ -65,6 +92,18 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <div class="tabs">
+    <button
+      v-for="tab in TABS"
+      :key="tab.key"
+      class="tab"
+      :class="{ active: activeTab === tab.key }"
+      @click="switchTab(tab.key)"
+    >
+      {{ tab.label }}
+    </button>
+  </div>
+
   <div class="grid">
     <div
       v-for="album in albums"
@@ -82,7 +121,7 @@ onUnmounted(() => {
     </div>
 
     <div v-if="albums.length === 0 && !loading" class="empty">
-      No records yet.
+      No {{ activeTab }}s yet.
     </div>
   </div>
 
@@ -126,6 +165,34 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 32px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 16px;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover { color: hsl(var(--foreground)); }
+
+.tab.active {
+  color: hsl(var(--foreground));
+  border-bottom-color: hsl(var(--foreground));
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

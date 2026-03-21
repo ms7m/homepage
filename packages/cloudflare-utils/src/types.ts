@@ -7,10 +7,13 @@ export interface CratediggerEnv {
   SPOTIFY_CLIENT_SECRET: string;
 }
 
+export type RecordType = "track" | "set" | "album";
+
 export interface AlbumRecord {
   id: string;
   url: string;
   source: "spotify" | "soundcloud";
+  type: RecordType;
   title: string;
   artist: string;
   album: string;

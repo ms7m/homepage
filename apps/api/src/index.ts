@@ -15,6 +15,7 @@ export interface Env {
   LASTFM_API_KEY: string;
   LASTFM_USER: string;
   R2_PUBLIC_URL: string;
+  SOUNDCLOUD_CLIENT_ID: string;
 }
 
 const ALLOWED_ORIGINS = [

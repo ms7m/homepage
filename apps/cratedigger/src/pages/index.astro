@@ -4,7 +4,7 @@ import AlbumGrid from "../components/AlbumGrid.vue";
 import NowPlaying from "../components/NowPlaying.vue";
 import LastFm from "../components/LastFm.vue";
 
-import { getAlbumsPage } from "@mikka/cloudflare-utils";
+import { getAlbumsPage, getTypeCounts } from "@mikka/cloudflare-utils";
 import type { CratediggerEnv } from "@mikka/cloudflare-utils";
 
 const PAGE_SIZE = 24;
@@ -15,10 +15,14 @@ let initialAlbums: Awaited<ReturnType<typeof getAlbumsPage>> = {
   total: 0,
   hasMore: false,
 };
+let counts = { tracks: 0, sets: 0, albums: 0 };
 
 try {
   const env = (Astro.locals as { runtime: { env: CratediggerEnv } }).runtime.env;
-  initialAlbums = await getAlbumsPage(env, 0, PAGE_SIZE);
+  [initialAlbums, counts] = await Promise.all([
+    getAlbumsPage(env, 0, PAGE_SIZE, "track"),
+    getTypeCounts(env),
+  ]);
 } catch {
   // dev mode without wrangler
 }
@@ -46,7 +50,9 @@ try {
     <header>
       <div class="header-inner">
         <div class="header-left">
-          <span class="record-count">{initialAlbums.total} records</span>
+          <span class="record-count mx-auto my-auto"
+            >{counts.tracks} tracks · {counts.sets} sets · {counts.albums} albums</span
+          >
           <h1 class="site-title">cratedigger</h1>
         </div>
         <div class="header-right">
@@ -55,27 +61,28 @@ try {
         </div>
       </div>
 
-      <p class="subtitle">
+      <p class="subtitle max-w-md">
         This is a crate of the type of music I like, a quick answer to people's question of 'what
         kind of music do you listen to?'. If I gave you this link, I care about you enough to share
-        something that means a lot to me! ❤ -- <a href="https://mikka.link" class="subtitle-link"
-          >check out my website to see what else I do</a
-        >
+        something that means a lot to me! ❤ -- <br />
       </p>
-      <div class="scrobbles-mobile">
-        <LastFm client:only="vue" />
-      </div>
+      <a href="https://mikka.link" class="subtitle-link subtitle"
+        >check out my website to see what else I do</a
+      >
     </header>
-
-    <main>
-      <AlbumGrid
-        client:only="vue"
-        initialAlbums={initialAlbums.albums}
-        total={initialAlbums.total}
-        apiUrl={API_URL}
-      />
-    </main>
+    <div class="scrobbles-mobile">
+      <LastFm client:only="vue" />
+    </div>
   </body>
+
+  <main>
+    <AlbumGrid
+      client:only="vue"
+      initialAlbums={initialAlbums.albums}
+      total={initialAlbums.total}
+      apiUrl={API_URL}
+    />
+  </main>
 </html>
 
 <style>
