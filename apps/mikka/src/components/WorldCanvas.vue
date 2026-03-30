@@ -103,6 +103,7 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
       { id: "linkedin", w: smallW, h: smallH, x: sx * 0.4, y: -sy * 0.6 },
       { id: "passport", w: 180, h: 255, x: -sx * 0.5, y: sy * 1.0 },
       { id: "snoopy", w: 100, h: 100, x: sx * 0.6, y: -sy * 0.8 },
+      { id: "drag-hint", w: 110, h: 42, x: sx * 0.15, y: sy * 0.9 },
     ];
   }
 
@@ -398,6 +399,7 @@ onUnmounted(() => {
       <MetroCard v-if="!isMobile" :style="pos('metrocard')" />
       <PassportCard :style="pos('passport')" @click="passportOpen = true" />
       <SnoopySticker :style="pos('snoopy')" />
+      <div v-if="isMobile" class="drag-hint-card world-card" :style="pos('drag-hint')">drag around :)</div>
       <SocialCard
         :style="pos('github')"
         href="https://github.com/ms7m"
@@ -481,6 +483,20 @@ onUnmounted(() => {
   letter-spacing: 0.06em;
   color: hsl(var(--muted-foreground));
   line-height: 1;
+}
+
+.drag-hint-card {
+  display: grid;
+  place-items: center;
+  font-size: 0.66rem;
+  letter-spacing: 0.01em;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--background) / 0.9);
+  border: 1px dashed hsl(var(--border));
+  border-radius: 12px;
+  box-shadow: 0 8px 18px hsl(var(--foreground) / 0.06);
+  pointer-events: none;
+  user-select: none;
 }
 
 @media (max-width: 639px) {
