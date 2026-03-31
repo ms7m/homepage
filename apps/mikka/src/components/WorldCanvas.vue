@@ -101,8 +101,9 @@ function buildNodes(vw: number, vh: number): ForceNode[] {
       { id: "twitter", w: smallW, h: smallH, x: sx * 0.2, y: sy * 0.7 },
       { id: "github", w: smallW, h: smallH, x: -sx * 0.2, y: -sy * 0.7 },
       { id: "linkedin", w: smallW, h: smallH, x: sx * 0.4, y: -sy * 0.6 },
-      { id: "passport", w: 180, h: 255, x: -sx * 0.5, y: sy * 1.0 },
+      { id: "passport", w: 180, h: 255, x: -sx * 1.15, y: sy * 1.45 },
       { id: "snoopy", w: 100, h: 100, x: sx * 0.6, y: -sy * 0.8 },
+      { id: "drag-hint", w: 110, h: 42, x: 0, y: 0 },
     ];
   }
 
@@ -191,15 +192,23 @@ function runLayout(vw: number, vh: number, resetOffset = true) {
   const minY = Math.min(...ys);
   const maxY = Math.max(...ye);
 
-  const cx = minX + (maxX - minX) / 2;
-  const cy = minY + (maxY - minY) / 2;
+  let cx = minX + (maxX - minX) / 2;
+  let cy = minY + (maxY - minY) / 2;
+
+  if (isMobile) {
+    const hint = result["drag-hint"];
+    if (hint) {
+      cx = hint.x;
+      cy = hint.y;
+    }
+  }
 
   worldOriginX.value = 2000 + vw / 2 - cx;
   worldOriginY.value = 2000 + vh / 2 - cy;
   if (resetOffset) {
     // On mobile, pan right so about + project cards are visible first
     // (passport is seeded to the left and should start off-screen)
-    offsetX.value = vw < 640 ? vw * -0.3 : 0;
+    offsetX.value = 0;
     offsetY.value = 0;
   }
 }
@@ -398,6 +407,7 @@ onUnmounted(() => {
       <MetroCard v-if="!isMobile" :style="pos('metrocard')" />
       <PassportCard :style="pos('passport')" @click="passportOpen = true" />
       <SnoopySticker :style="pos('snoopy')" />
+      <div v-if="isMobile" class="drag-hint-card world-card" :style="pos('drag-hint')">drag around :)</div>
       <SocialCard
         :style="pos('github')"
         href="https://github.com/ms7m"
@@ -481,6 +491,21 @@ onUnmounted(() => {
   letter-spacing: 0.06em;
   color: hsl(var(--muted-foreground));
   line-height: 1;
+}
+
+.drag-hint-card {
+  display: grid;
+  place-items: center;
+  font-size: 0.66rem;
+  letter-spacing: 0.01em;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--background) / 0.9);
+  border: 1px dashed hsl(var(--border));
+  border-radius: 12px;
+  box-shadow: 0 8px 18px hsl(var(--foreground) / 0.06);
+  pointer-events: none;
+  user-select: none;
+  transform: rotate(-6deg);
 }
 
 @media (max-width: 639px) {
