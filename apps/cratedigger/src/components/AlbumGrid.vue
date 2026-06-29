@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AlbumRecord, RecordType } from "@mikka/cloudflare-utils";
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
 const props = defineProps<{
   initialAlbums: AlbumRecord[];
@@ -25,6 +25,40 @@ const loading = ref(false);
 const sentinel = ref<HTMLDivElement | null>(null);
 const selected = ref<AlbumRecord | null>(null);
 const flipped = ref(false);
+// `settled` flattens the card out of its 3D (preserve-3d) context once the flip
+// finishes — WebKit/iOS Safari won't render an <iframe> that has a preserve-3d
+// ancestor, so the Spotify embed only mounts after we drop back to 2D.
+const settled = ref(false);
+const showEmbed = ref(false);
+
+const spotifyEmbedUrl = computed(() => {
+  if (!selected.value || selected.value.source !== "spotify") return null;
+  const match = selected.value.url.match(/track\/([a-zA-Z0-9]+)/);
+  if (!match) return null;
+  return `https://open.spotify.com/embed/track/${match[1]}?utm_source=generator`;
+});
+
+// SoundCloud links are stored as on.soundcloud.com short links, which the player
+// widget rejects. SoundCloud's oEmbed endpoint (CORS-enabled) resolves them to a
+// canonical api.soundcloud.com/tracks/<id> URL that the widget accepts.
+const soundcloudEmbedUrl = ref<string | null>(null);
+
+async function resolveSoundcloud(album: AlbumRecord) {
+  if (album.source !== "soundcloud") return;
+  try {
+    const res = await fetch(
+      `https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(album.url)}`
+    );
+    const data = (await res.json()) as { html?: string };
+    const src = data.html?.match(/src="([^"]+)"/)?.[1];
+    const resolved = src ? new URL(src).searchParams.get("url") : null;
+    if (!resolved || selected.value?.id !== album.id) return;
+    soundcloudEmbedUrl.value =
+      `https://w.soundcloud.com/player/?url=${encodeURIComponent(resolved)}` +
+      `&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false` +
+      `&show_user=true&show_teaser=false&visual=false`;
+  } catch {}
+}
 
 async function loadPage(tab: Tab, pageNum: number, append = false) {
   if (loading.value) return;
@@ -55,16 +89,32 @@ async function loadMore() {
   await loadPage(activeTab.value, page.value, true);
 }
 
+let settleTimer: ReturnType<typeof setTimeout>;
+
 function open(album: AlbumRecord) {
+  clearTimeout(settleTimer);
   selected.value = album;
   flipped.value = false;
+  settled.value = false;
+  showEmbed.value = false;
+  soundcloudEmbedUrl.value = null;
+  resolveSoundcloud(album);
   requestAnimationFrame(() => {
     setTimeout(() => { flipped.value = true; }, 80);
   });
+  // After the 0.5s flip completes, flatten to 2D and mount the embed.
+  settleTimer = setTimeout(() => {
+    settled.value = true;
+    showEmbed.value = true;
+  }, 640);
 }
 
 function close() {
+  clearTimeout(settleTimer);
   flipped.value = false;
+  settled.value = false;
+  showEmbed.value = false;
+  soundcloudEmbedUrl.value = null;
   setTimeout(() => { selected.value = null; }, 320);
 }
 
@@ -135,7 +185,7 @@ onUnmounted(() => {
     <Transition name="overlay">
       <div v-if="selected" class="modal-overlay" @click.self="close">
         <div class="modal-scene">
-          <div class="modal-flipper" :class="{ flipped }">
+          <div class="modal-flipper" :class="{ flipped, settled }">
             <div class="modal-face modal-front">
               <img :src="selected.artUrl" :alt="selected.title" />
             </div>
@@ -147,6 +197,20 @@ onUnmounted(() => {
                 <h2 class="info-title">{{ selected.title }}</h2>
                 <p class="info-artist">{{ selected.artist }}</p>
                 <p v-if="selected.album" class="info-album">{{ selected.album }}</p>
+                <iframe
+                  v-if="spotifyEmbedUrl && showEmbed"
+                  :src="spotifyEmbedUrl"
+                  class="media-embed spotify-embed"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                />
+                <iframe
+                  v-if="soundcloudEmbedUrl && showEmbed"
+                  :src="soundcloudEmbedUrl"
+                  class="media-embed sc-embed"
+                  allow="autoplay; encrypted-media"
+                  loading="lazy"
+                />
                 <a
                   :href="selected.url"
                   target="_blank"
@@ -195,17 +259,17 @@ onUnmounted(() => {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 32px;
   padding: 32px;
 }
 
-@media (min-width: 480px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 768px) { .grid { grid-template-columns: repeat(4, 1fr); } }
-@media (min-width: 1024px) { .grid { grid-template-columns: repeat(5, 1fr); } }
-@media (min-width: 1400px) { .grid { grid-template-columns: repeat(6, 1fr); } }
+@media (min-width: 480px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 1400px) { .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 
-.album { cursor: pointer; }
+.album { cursor: pointer; min-width: 0; }
 
 .album img {
   width: 100%;
@@ -280,6 +344,28 @@ onUnmounted(() => {
 }
 
 .modal-flipper.flipped { transform: rotateY(180deg); }
+
+/*
+ * Once the flip settles, drop the whole card back to a flat 2D context. The
+ * back face is already visually upright at this point (flipper 180deg × face
+ * 180deg = 0), so zeroing both transforms with no transition is seamless — but
+ * it lets the Spotify <iframe> render, which WebKit refuses to do inside a
+ * preserve-3d ancestor.
+ */
+.modal-flipper.settled {
+  transform: none;
+  transform-style: flat;
+  transition: none;
+}
+
+.modal-flipper.settled .modal-front { display: none; }
+
+.modal-flipper.settled .modal-back {
+  position: relative;
+  transform: none;
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
+}
 
 .modal-face {
   backface-visibility: hidden;
@@ -363,6 +449,17 @@ onUnmounted(() => {
   font-size: 0.75rem;
   color: hsl(var(--muted-foreground));
 }
+
+.media-embed {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  margin-top: 12px;
+  display: block;
+}
+
+.spotify-embed { height: 80px; }
+.sc-embed { height: 120px; }
 
 .info-link {
   margin-top: 12px;
