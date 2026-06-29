@@ -29,7 +29,14 @@ export async function getSpotifyToken(env: SpotifyEnv): Promise<string> {
   return access_token;
 }
 
-const SET_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+// Anything at or above this runtime is treated as a DJ set / mix rather than a
+// song. Songs effectively never run this long, while sets/mixes run well past it.
+export const SET_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes
+
+/** Classify a track-or-set purely by its runtime in milliseconds. */
+export function classifyByDuration(durationMs: number): RecordType {
+  return durationMs >= SET_THRESHOLD_MS ? "set" : "track";
+}
 
 export function generateId(url: string): string {
   return createHash("sha256").update(url).digest("hex").slice(0, 12);
@@ -84,6 +91,7 @@ export async function fetchSpotifyMeta(
   if (!trackRes.ok) throw new Error("Failed to fetch Spotify track");
   const track = (await trackRes.json()) as {
     name: string;
+    duration_ms: number;
     artists: { name: string }[];
     album: { name: string; images: { url: string }[] };
   };
@@ -92,7 +100,7 @@ export async function fetchSpotifyMeta(
     id: generateId(url),
     url,
     source: "spotify",
-    type: "track",
+    type: classifyByDuration(track.duration_ms),
     title: track.name,
     artist: track.artists.map((a) => a.name).join(", "),
     album: track.album.name,
@@ -130,7 +138,7 @@ export async function fetchSoundCloudMeta(
       );
       if (apiRes.ok) {
         const track = (await apiRes.json()) as { duration: number };
-        type = track.duration >= SET_THRESHOLD_MS ? "set" : "track";
+        type = classifyByDuration(track.duration);
       }
     }
   }
